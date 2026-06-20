@@ -1,0 +1,106 @@
+---
+import Layout from '../components/Layout.astro';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: 'About Unit Converter',
+  url: 'https://prounitconverter.com/about',
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'Unit Converter',
+    url: 'https://prounitconverter.com',
+    description:
+      'A free, fast, and accurate online tool for converting units across 14 categories including length, weight, temperature, area, volume, speed, digital storage, time, currency, power, pressure, energy, density, and torque.',
+  },
+};
+---
+
+<Layout
+  title="About Us — Unit Converter | Free Online Unit Conversion Tool"
+  description="Learn about Unit Converter — a free, ad-free, privacy-respecting tool for instant unit and currency conversions across 14 categories and 100+ units."
+  canonical="https://prounitconverter.com/about"
+  schemas={[schema]}
+>
+  <div class="container page-container">
+    <header class="page-header">
+      <h1 class="page-title">About Unit Converter</h1>
+      <p class="page-subtitle">A free, fast, and private conversion tool built for everyone.</p>
+    </header>
+
+    <div class="prose">
+      <h2>Our Mission</h2>
+      <p>
+        Unit Converter exists to make scientific, engineering, cooking, travel, and everyday unit
+        conversions instant and effortless. Whether you're a student converting metres to feet, a chef
+        scaling a recipe, an engineer working with watts and horsepower, or a traveller checking live
+        currency rates — this tool delivers results in milliseconds with no sign-up required.
+      </p>
+
+      <h2>What We Offer</h2>
+      <p>We cover <strong>14 conversion categories</strong> with more than 100 individual units:</p>
+      <ul>
+        <li><strong>Length</strong> — metres, feet, inches, kilometres, miles, nautical miles</li>
+        <li><strong>Weight &amp; Mass</strong> — kilograms, pounds, ounces, stone, metric tons</li>
+        <li><strong>Temperature</strong> — Celsius, Fahrenheit, Kelvin</li>
+        <li><strong>Area</strong> — square metres, acres, hectares, square feet</li>
+        <li><strong>Volume</strong> — litres, gallons, cups, fluid ounces, cubic metres</li>
+        <li><strong>Speed</strong> — km/h, mph, m/s, knots, ft/s</li>
+        <li><strong>Digital Storage</strong> — bytes, kilobytes, megabytes, gigabytes, terabytes</li>
+        <li><strong>Time</strong> — seconds, minutes, hours, days, weeks, months, years</li>
+        <li><strong>Currency</strong> — live rates for USD, EUR, GBP, JPY, INR, CAD, AUD, and more</li>
+        <li><strong>Power</strong> — watts, kilowatts, horsepower, BTU/hr</li>
+        <li><strong>Pressure</strong> — pascals, bar, PSI, atmospheres</li>
+        <li><strong>Energy</strong> — joules, calories, kilowatt-hours, BTUs</li>
+        <li><strong>Density</strong> — kg/m³, g/cm³, lb/ft³</li>
+        <li><strong>Torque</strong> — newton-metres, pound-feet, kilogram-force metres</li>
+      </ul>
+
+      <h2>Built for Speed and Privacy</h2>
+      <p>
+        Every page is pre-built as pure static HTML — no server-side rendering delay, no heavy
+        JavaScript framework overhead, and no tracking cookies. All conversions happen instantly
+        in your browser. We store only your theme preference (light or dark mode) locally on
+        your device, and nothing is ever sent to our servers.
+      </p>
+      <p>
+        Currency exchange rates are fetched directly from the open.er-api.com public API and
+        cached for your session, so the currency converter continues to work offline after the
+        initial page load.
+      </p>
+
+      <h2>Accuracy Commitment</h2>
+      <p>
+        All conversion factors are sourced from authoritative references including the International
+        Bureau of Weights and Measures (BIPM) and the National Institute of Standards and
+        Technology (NIST). If you find an error in any conversion, please
+        <a href="/contact">contact us</a> and we will correct it promptly.
+      </p>
+      <p>
+        Currency exchange rates are indicative only and must not be used for financial transactions.
+        See our <a href="/terms">Terms &amp; Conditions</a> for full details.
+      </p>
+
+      <h2>Accessibility</h2>
+      <p>
+        Unit Converter follows WCAG 2.1 AA guidelines. All form controls are properly labelled,
+        colour contrast meets AA ratios, and the entire interface is keyboard-navigable. Dark mode
+        respects your system preference and can also be toggled manually at any time.
+      </p>
+
+      <div class="page-cta">
+        <a href="/" class="btn-primary">Start Converting</a>
+        <a href="/contact" class="btn-outline">Get in Touch</a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .page-cta {
+    display: flex;
+    gap: var(--sp-md);
+    margin-top: var(--sp-xxl);
+    flex-wrap: wrap;
+  }
+</style>

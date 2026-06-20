@@ -1,0 +1,564 @@
+---
+import Layout from '../../components/Layout.astro';
+import ConverterWidget from '../../components/ConverterWidget.astro';
+import ConversionTable from '../../components/ConversionTable.astro';
+import { categories, convert, convertFuel, getFormula, formatResult } from '../../lib/units';
+import { pairContent } from '../../data/pair-content';
+
+export async function getStaticPaths() {
+  const paths: Array<{ params: { from: string; to: string }; props: object }> = [];
+
+  for (const cat of categories) {
+    if (cat.id === 'numbase') continue; // string-based conversion; no pair pages
+    for (const [fromId, toId] of cat.commonPairs) {
+      const fromUnit = cat.units.find(u => u.id === fromId);
+      const toUnit   = cat.units.find(u => u.id === toId);
+      if (!fromUnit || !toUnit) continue;
+
+      paths.push({
+        params: { from: fromId, to: toId },
+        props:  { category: cat, fromId, toId },
+      });
+    }
+  }
+
+  return paths;
+}
+
+interface Props {
+  category: (typeof categories)[number];
+  fromId: string;
+  toId: string;
+}
+
+const { category, fromId, toId } = Astro.props;
+const fromUnit = category.units.find(u => u.id === fromId)!;
+const toUnit   = category.units.find(u => u.id === toId)!;
+
+const siteUrl  = 'https://prounitconverter.com';
+const pageUrl  = `${siteUrl}/convert/${fromId}-to-${toId}`;
+
+// Representative conversion value for display
+const exampleVal = 1;
+let exampleResult: number;
+try {
+  if (category.id === 'fuel') {
+    exampleResult = convertFuel(exampleVal, fromId, toId);
+  } else {
+    exampleResult = convert(exampleVal, fromUnit, toUnit, category.id);
+  }
+} catch {
+  exampleResult = 0;
+}
+
+// Example table for SEO — key values
+const exampleRows = [1, 5, 10, 25, 50, 100, 500, 1000].map(val => {
+  let res: number;
+  try {
+    res = category.id === 'fuel' ? convertFuel(val, fromId, toId) : convert(val, fromUnit, toUnit, category.id);
+  } catch {
+    res = 0;
+  }
+  return { input: val, output: res };
+});
+
+const richContent = pairContent[`${fromId}-${toId}`] ?? null;
+
+const pageTitle = `Convert ${fromUnit.name} to ${toUnit.name} — Free ${category.name} Converter`;
+const pageDesc  = richContent
+  ? `Instantly convert ${fromUnit.name} to ${toUnit.name} — ${richContent.useCases[0].split(':')[0].toLowerCase()}. 1 ${fromUnit.symbol} = ${formatResult(exampleResult)} ${toUnit.symbol}. Free converter with formula and tables.`
+  : `Instantly convert ${fromUnit.name} to ${toUnit.name} with our free online tool. 1 ${fromUnit.symbol} = ${formatResult(exampleResult)} ${toUnit.symbol}. Includes conversion formula, reference table, and common use cases.`;
+
+const schemaFormula = getFormula(exampleVal, fromUnit, toUnit, category.id, exampleResult);
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home',               item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: `${category.name} Converter`, item: `${siteUrl}/convert/${category.id}` },
+      { '@type': 'ListItem', position: 3, name: pageTitle,             item: pageUrl },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: pageTitle,
+    url: pageUrl,
+    applicationCategory: 'UtilityApplication',
+    operatingSystem: 'Any',
+    description: pageDesc,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: `How to Convert ${fromUnit.name} to ${toUnit.name}`,
+    description: pageDesc,
+    step: [
+      { '@type': 'HowToStep', name: 'Enter value', text: `Type the number of ${fromUnit.name} you want to convert.` },
+      { '@type': 'HowToStep', name: 'Read result', text: `The equivalent in ${toUnit.name} appears instantly below.` },
+      { '@type': 'HowToStep', name: 'Use the formula', text: schemaFormula },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: `How many ${toUnit.name} in a ${fromUnit.name}?`,
+        acceptedAnswer: { '@type': 'Answer', text: `1 ${fromUnit.name} (${fromUnit.symbol}) = ${formatResult(exampleResult)} ${toUnit.name} (${toUnit.symbol}).` },
+      },
+      {
+        '@type': 'Question',
+        name: `How do I convert ${fromUnit.name} to ${toUnit.name}?`,
+        acceptedAnswer: { '@type': 'Answer', text: schemaFormula },
+      },
+      {
+        '@type': 'Question',
+        name: `What is the ${fromUnit.symbol} to ${toUnit.symbol} formula?`,
+        acceptedAnswer: { '@type': 'Answer', text: `Formula: ${schemaFormula}` },
+      },
+      ...(richContent ? [{
+        '@type': 'Question',
+        name: `When would I need to convert ${fromUnit.name} to ${toUnit.name}?`,
+        acceptedAnswer: { '@type': 'Answer', text: richContent.useCases.join(' ') },
+      }] : []),
+    ],
+  },
+];
+
+// Related pairs (same category, different combos)
+const relatedPairs = category.commonPairs
+  .filter(([f, t]) => !(f === fromId && t === toId))
+  .slice(0, 6)
+  .map(([f, t]) => {
+    const fu = category.units.find(u => u.id === f);
+    const tu = category.units.find(u => u.id === t);
+    return fu && tu ? { fromId: f, toId: t, label: `${fu.name} to ${tu.name}` } : null;
+  })
+  .filter(Boolean);
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDesc}
+  canonical={pageUrl}
+  schemas={schemas}
+  activeCategoryId={category.id}
+  ogTitle={pageTitle}
+>
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" class="breadcrumb-bar">
+    <div class="container">
+      <ol class="breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
+          <meta itemprop="position" content="1" />
+        </li>
+        <li aria-hidden="true" class="breadcrumb-sep">›</li>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href={`/convert/${category.id}`} itemprop="item"><span itemprop="name">{category.name}</span></a>
+          <meta itemprop="position" content="2" />
+        </li>
+        <li aria-hidden="true" class="breadcrumb-sep">›</li>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">{fromUnit.name} to {toUnit.name}</span>
+          <meta itemprop="position" content="3" />
+        </li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="pair-hero hero-mesh">
+    <div class="container">
+      <div class="pair-hero-inner">
+        <span class="cat-badge">{category.icon} {category.name}</span>
+        <h1 class="display-lg">
+          {fromUnit.name} to {toUnit.name}
+        </h1>
+        <p class="pair-formula body-lg">
+          1 {fromUnit.symbol} = <strong>{formatResult(exampleResult)}</strong> {toUnit.symbol}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Converter widget -->
+  <section class="section-sm">
+    <div class="container">
+      <div class="widget-wrap">
+        <ConverterWidget
+          category={category}
+          presetFrom={fromId}
+          presetTo={toId}
+          presetValue={1}
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- SEO conversion table (static) -->
+  <section class="section-sm">
+    <div class="container content-narrow">
+      <h2>{fromUnit.name} to {toUnit.name} Conversion Table</h2>
+      <div class="table-wrapper">
+        <table class="conversion-table pair-table" aria-label={`${fromUnit.name} to ${toUnit.name} conversion table`}>
+          <thead>
+            <tr>
+              <th scope="col">{fromUnit.name} ({fromUnit.symbol})</th>
+              <th scope="col">{toUnit.name} ({toUnit.symbol})</th>
+            </tr>
+          </thead>
+          <tbody>
+            {exampleRows.map(row => (
+              <tr>
+                <td class="td-value">{row.input} {fromUnit.symbol}</td>
+                <td class="td-value">{formatResult(row.output)} {toUnit.symbol}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Full table from the category -->
+  {category.id !== 'currency' && category.id !== 'temperature' && category.id !== 'numbase' && (
+    <section class="section-sm">
+      <div class="container">
+        <ConversionTable
+          category={category}
+          fromUnitId={fromId}
+          inputValue={1}
+        />
+      </div>
+    </section>
+  )}
+
+  <!-- How to convert -->
+  <section class="section">
+    <div class="container content-narrow">
+      <h2>How to Convert {fromUnit.name} to {toUnit.name}</h2>
+      <p class="body-lg" style="color: var(--color-ink-2); margin: var(--sp-lg) 0;">
+        {schemaFormula}
+      </p>
+
+      {fromUnit.info && (
+        <div class="unit-info-card">
+          <h3>About {fromUnit.name} ({fromUnit.symbol})</h3>
+          <p>{fromUnit.info}</p>
+        </div>
+      )}
+      {toUnit.info && (
+        <div class="unit-info-card">
+          <h3>About {toUnit.name} ({toUnit.symbol})</h3>
+          <p>{toUnit.info}</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- Rich content section — renders detailed use-case content when available, generic fallback otherwise -->
+  {richContent ? (
+    <section class="section">
+      <div class="container content-narrow">
+        <p class="body-lg pair-content-intro">
+          {richContent.intro}
+        </p>
+
+        {richContent.quickTip && (
+          <div class="pair-tip-chip" role="note" aria-label="Quick tip">
+            <span class="pair-tip-label">Tip</span>
+            <span>{richContent.quickTip}</span>
+          </div>
+        )}
+
+        <h2 class="pair-content-heading">
+          Common Uses: {fromUnit.name} to {toUnit.name}
+        </h2>
+        <ul class="pair-use-cases">
+          {richContent.useCases.map(uc => (
+            <li>{uc}</li>
+          ))}
+        </ul>
+
+        <div class="pair-history-note" role="note">
+          <p class="pair-history-label">Background</p>
+          <p>{richContent.historyNote}</p>
+        </div>
+      </div>
+    </section>
+  ) : (
+    <section class="section">
+      <div class="container content-narrow">
+        <p class="body-lg pair-content-intro">
+          {fromUnit.name} ({fromUnit.symbol}) and {toUnit.name} ({toUnit.symbol}) are both
+          {category.name.toLowerCase()} units used across different measurement systems.
+          Converting between them is straightforward: apply the conversion factor shown above or
+          use the tool above to get an instant result. This converter handles all rounding
+          automatically and supports values from fractions to billions.
+        </p>
+        <p class="body-lg pair-content-intro" style="margin-top: var(--sp-lg);">
+          Common scenarios requiring this conversion include engineering specifications,
+          academic work, international trade documents, and everyday measurement tasks where
+          the source and destination systems differ. Bookmark this page for quick access whenever
+          you need to convert {fromUnit.name} to {toUnit.name}.
+        </p>
+      </div>
+    </section>
+  )}
+
+  <!-- FAQ -->
+  <section class="section" style="background: var(--color-canvas-soft); border-top: 1px solid var(--color-hairline);">
+    <div class="container content-narrow">
+      <h2>{fromUnit.name} to {toUnit.name} — FAQ</h2>
+      <div class="faq-list" style="margin-top: var(--sp-xxl);">
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="pair-faq-1">
+            How many {toUnit.name} in a {fromUnit.name}?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <div class="faq-answer" id="pair-faq-1" role="region">
+            <p>1 {fromUnit.name} ({fromUnit.symbol}) = {formatResult(exampleResult)} {toUnit.name} ({toUnit.symbol}).</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="pair-faq-2">
+            What is the formula to convert {fromUnit.symbol} to {toUnit.symbol}?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <div class="faq-answer" id="pair-faq-2" role="region">
+            <p>{schemaFormula}</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="pair-faq-3">
+            Is this converter free to use?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <div class="faq-answer" id="pair-faq-3" role="region">
+            <p>Yes — completely free, no account needed, no ads. Results update instantly as you type.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Related pairs -->
+  {relatedPairs.length > 0 && (
+    <section class="section-sm">
+      <div class="container content-narrow">
+        <h2 class="heading-sm" style="color: var(--color-ink-mute); margin-bottom: var(--sp-lg); text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; font-weight: 600;">
+          Related {category.name} conversions
+        </h2>
+        <div class="other-cats">
+          {relatedPairs.map(pair => pair && (
+            <a href={`/convert/${pair.fromId}-to-${pair.toId}`} class="other-cat-link">
+              {pair.label}
+            </a>
+          ))}
+          <a href={`/convert/${category.id}`} class="other-cat-link">
+            All {category.name} units →
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+</Layout>
+
+<style>
+  .pair-hero {
+    padding: var(--sp-xxl) 0;
+  }
+
+  .pair-hero-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-sm);
+    max-width: 640px;
+  }
+
+  .cat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: var(--rounded-pill);
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+    letter-spacing: 0.02em;
+  }
+
+  .pair-formula {
+    color: var(--color-ink-2);
+    font-feature-settings: "tnum";
+    margin-top: var(--sp-xs);
+  }
+
+  .pair-formula strong {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  .widget-wrap {
+    max-width: 760px;
+  }
+
+  .content-narrow {
+    max-width: 760px;
+  }
+
+  .pair-table {
+    width: 100%;
+  }
+
+  .unit-info-card {
+    background: var(--color-canvas-soft);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-lg);
+    padding: var(--sp-xl);
+    margin-top: var(--sp-lg);
+  }
+
+  .unit-info-card h3 {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: var(--sp-sm);
+    color: var(--color-ink);
+  }
+
+  .unit-info-card p {
+    font-size: 14px;
+    color: var(--color-ink-2);
+    line-height: 1.6;
+  }
+
+  .pair-content-intro {
+    color: var(--color-ink-2);
+    line-height: 1.65;
+  }
+
+  .pair-tip-chip {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-sm);
+    padding: var(--sp-md) var(--sp-lg);
+    background: var(--color-primary-subtle);
+    border-radius: var(--rounded-md);
+    margin: var(--sp-xl) 0;
+    font-size: 14px;
+    color: var(--color-ink-2);
+    line-height: 1.5;
+  }
+
+  .pair-tip-label {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    background: var(--color-primary);
+    color: var(--color-on-primary, #fff);
+    border-radius: var(--rounded-xs);
+    margin-top: 1px;
+  }
+
+  .pair-content-heading {
+    margin-top: var(--sp-xxl);
+    margin-bottom: var(--sp-lg);
+    color: var(--color-ink);
+  }
+
+  .pair-use-cases {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-md);
+  }
+
+  .pair-use-cases li {
+    padding: var(--sp-md) var(--sp-xl);
+    border-left: 2px solid var(--color-primary-subtle);
+    background: var(--color-canvas-soft);
+    border-radius: 0 var(--rounded-md) var(--rounded-md) 0;
+    font-size: 15px;
+    color: var(--color-ink-2);
+    line-height: 1.5;
+  }
+
+  .pair-history-note {
+    margin-top: var(--sp-xxl);
+    padding: var(--sp-xl);
+    background: var(--color-canvas-soft);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-lg);
+  }
+
+  .pair-history-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-ink-mute);
+    margin-bottom: var(--sp-sm) !important;
+  }
+
+  .pair-history-note p:last-child {
+    font-size: 14px;
+    color: var(--color-ink-2);
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  .other-cats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-sm);
+  }
+
+  .other-cat-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: var(--rounded-pill);
+    font-size: 13px;
+    color: var(--color-ink-2);
+    border: 1px solid var(--color-hairline);
+    text-decoration: none;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .other-cat-link:hover {
+    border-color: var(--color-primary-subtle);
+    color: var(--color-primary);
+    background: var(--color-canvas-soft);
+    text-decoration: none;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item')!;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(el => {
+        el.classList.remove('open');
+        el.querySelector('.faq-question')?.setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+</script>

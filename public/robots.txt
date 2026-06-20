@@ -1,0 +1,71 @@
+# robots.txt — unitconverter.tools
+# Generated for search engine crawlers
+# Sitemap: https://unitconverter.tools/sitemap-index.xml
+
+# ──────────────────────────────────────────────────────────────
+# Google Search Crawler
+# ──────────────────────────────────────────────────────────────
+User-agent: Googlebot
+Allow: /
+Disallow: /embed/
+Disallow: /404
+Disallow: /500
+
+# ──────────────────────────────────────────────────────────────
+# Google Image Crawler (allow all images for rich results)
+# ──────────────────────────────────────────────────────────────
+User-agent: Googlebot-Image
+Allow: /
+
+# ──────────────────────────────────────────────────────────────
+# Google AdsBot
+# ──────────────────────────────────────────────────────────────
+User-agent: AdsBot-Google
+Allow: /
+
+# ──────────────────────────────────────────────────────────────
+# Microsoft Bing Crawler
+# ──────────────────────────────────────────────────────────────
+User-agent: Bingbot
+Allow: /
+Disallow: /embed/
+Disallow: /404
+Disallow: /500
+Crawl-delay: 1
+
+# ──────────────────────────────────────────────────────────────
+# DuckDuckGo Crawler
+# ──────────────────────────────────────────────────────────────
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /embed/
+
+# ──────────────────────────────────────────────────────────────
+# Yahoo / Oath Crawler
+# ──────────────────────────────────────────────────────────────
+User-agent: Slurp
+Allow: /
+Disallow: /embed/
+
+# ──────────────────────────────────────────────────────────────
+# Yandex Crawler
+# ──────────────────────────────────────────────────────────────
+User-agent: YandexBot
+Allow: /
+Disallow: /embed/
+Disallow: /404
+Disallow: /500
+
+# ──────────────────────────────────────────────────────────────
+# All other crawlers — default permissive policy
+# ──────────────────────────────────────────────────────────────
+User-agent: *
+Allow: /
+Disallow: /embed/
+Disallow: /404
+Disallow: /500
+
+# ──────────────────────────────────────────────────────────────
+# Sitemap location (all major crawlers read this line)
+# ──────────────────────────────────────────────────────────────
+Sitemap: https://unitconverter.tools/sitemap-index.xml

@@ -1,0 +1,1222 @@
+---
+import type { Category } from '../lib/units';
+
+interface Props {
+  category: Category;
+  compact?: boolean;
+  presetFrom?: string;
+  presetTo?: string;
+  presetValue?: number;
+}
+
+const { category, compact = false, presetFrom, presetTo, presetValue } = Astro.props;
+const defaultFrom = category.units.find(u => u.id === (presetFrom ?? category.defaultFrom)) ?? category.units[0];
+const defaultTo   = category.units.find(u => u.id === (presetTo   ?? category.defaultTo))   ?? category.units[1];
+const isCurrency  = category.id === 'currency';
+const isTemp      = category.id === 'temperature';
+const isFuel      = category.id === 'fuel';
+const isNumBase   = category.id === 'numbase';
+---
+
+<div
+  class={`converter-widget ${compact ? 'converter-widget--compact' : ''}`}
+  data-category={category.id}
+  data-is-temp={String(isTemp)}
+  data-is-currency={String(isCurrency)}
+  data-is-fuel={String(isFuel)}
+  data-is-numbase={String(isNumBase)}
+>
+  <!-- ── Widget header ── -->
+  <div class="widget-header">
+    <div class="widget-tabs" role="tablist" aria-label="Converter mode">
+      <button class="widget-tab active" role="tab" aria-selected="true"  data-tab="single" aria-controls="panel-single">Single</button>
+      <button class="widget-tab"        role="tab" aria-selected="false" data-tab="batch"  aria-controls="panel-batch">Batch</button>
+    </div>
+    <div class="widget-header-actions">
+      <button class="fav-btn" aria-label="Add to favorites" title="Add to favorites">☆</button>
+      <div class="precision-wrap" title="Decimal places">
+        <span class="precision-label">Precision:</span>
+        <select class="precision-select" aria-label="Decimal places">
+          <option value="2">2</option>
+          <option value="4" selected>4</option>
+          <option value="6">6</option>
+          <option value="8">8</option>
+          <option value="10">Full</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SINGLE mode panel ── -->
+  <div id="panel-single" class="widget-panel" role="tabpanel">
+    <div class="converter-fields">
+      <!-- FROM -->
+      <div class="converter-field">
+        <label for={`from-value-${category.id}`}>From</label>
+        <div class="input-group">
+          <input
+            type={isNumBase ? 'text' : 'number'}
+            id={`from-value-${category.id}`}
+            class="input input-lg from-value"
+            value={isNumBase ? '10' : String(presetValue ?? 1)}
+            step={isNumBase ? undefined : 'any'}
+            inputmode={isNumBase ? 'text' : 'decimal'}
+            autocomplete="off"
+            spellcheck={false}
+            aria-label={`Value in ${defaultFrom.name}`}
+          />
+          <div class="unit-select-wrap">
+            <!-- Hidden select keeps unit ID as the JS-accessible value -->
+            <select class="from-unit" aria-hidden="true" hidden>
+              {category.units.map(u => (
+                <option value={u.id} selected={u.id === defaultFrom.id}>{u.symbol} — {u.name}</option>
+              ))}
+            </select>
+            <!-- Visible searchable combobox -->
+            <div class="unit-combobox" data-for="from">
+              <input
+                type="text"
+                class="input unit-combobox-input"
+                value={`${defaultFrom.symbol} — ${defaultFrom.name}`}
+                autocomplete="off"
+                spellcheck={false}
+                aria-label="From unit"
+                aria-autocomplete="list"
+                aria-haspopup="listbox"
+                readonly
+              />
+              <ul class="unit-combobox-list" role="listbox" aria-label="From unit options" hidden>
+                {category.units.map(u => (
+                  <li role="option" data-unit-id={u.id} aria-selected={u.id === defaultFrom.id ? 'true' : 'false'}>
+                    <span class="unit-opt-sym">{u.symbol}</span>
+                    <span class="unit-opt-name">{u.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {category.units.some(u => u.info) && (
+              <button class="unit-info-btn from-info-btn" aria-label="Unit information" title="About this unit">ⓘ</button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <!-- SWAP -->
+      <div class="converter-middle">
+        <button class="swap-btn" aria-label="Swap units" title="Swap units (S)">⇄</button>
+      </div>
+
+      <!-- TO -->
+      <div class="converter-field">
+        <label for={`to-value-${category.id}`}>To</label>
+        <div class="input-group">
+          <input
+            type={isNumBase ? 'text' : 'number'}
+            id={`to-value-${category.id}`}
+            class="input input-lg to-value"
+            readonly
+            tabindex="-1"
+            aria-label={`Result in ${defaultTo.name}`}
+            aria-live="polite"
+          />
+          <div class="unit-select-wrap">
+            <!-- Hidden select keeps unit ID as the JS-accessible value -->
+            <select class="to-unit" aria-hidden="true" hidden>
+              {category.units.map(u => (
+                <option value={u.id} selected={u.id === defaultTo.id}>{u.symbol} — {u.name}</option>
+              ))}
+            </select>
+            <!-- Visible searchable combobox -->
+            <div class="unit-combobox" data-for="to">
+              <input
+                type="text"
+                class="input unit-combobox-input"
+                value={`${defaultTo.symbol} — ${defaultTo.name}`}
+                autocomplete="off"
+                spellcheck={false}
+                aria-label="To unit"
+                aria-autocomplete="list"
+                aria-haspopup="listbox"
+                readonly
+              />
+              <ul class="unit-combobox-list" role="listbox" aria-label="To unit options" hidden>
+                {category.units.map(u => (
+                  <li role="option" data-unit-id={u.id} aria-selected={u.id === defaultTo.id ? 'true' : 'false'}>
+                    <span class="unit-opt-sym">{u.symbol}</span>
+                    <span class="unit-opt-name">{u.name}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {category.units.some(u => u.info) && (
+              <button class="unit-info-btn to-info-btn" aria-label="Unit information" title="About this unit">ⓘ</button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formula display -->
+    <div class="formula-bar" aria-live="polite" aria-label="Conversion formula">
+      <span class="formula-icon">ƒ</span>
+      <code class="formula-text">—</code>
+    </div>
+
+    <!-- Actions row -->
+    <div class="converter-actions">
+      <button class="btn btn-primary btn-sm copy-btn" aria-label="Copy result (C)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
+      <button class="btn btn-ghost btn-sm share-btn" aria-label="Share this conversion">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </button>
+      <button class="btn btn-ghost btn-sm reset-btn" aria-label="Reset (Esc)">Reset</button>
+      {isCurrency && (
+        <span class="live-badge" id={`rate-badge-${category.id}`}>
+          <span class="live-dot"></span> Loading rates…
+        </span>
+      )}
+    </div>
+  </div>
+
+  <!-- ── BATCH mode panel ── -->
+  <div id="panel-batch" class="widget-panel" role="tabpanel" hidden>
+    <div class="batch-controls">
+      <div class="batch-units">
+        <div class="batch-field">
+          <label>From unit</label>
+          <select class="input batch-from-unit" aria-label="Batch from unit">
+            {category.units.map(u => (
+              <option value={u.id} selected={u.id === defaultFrom.id}>{u.symbol} — {u.name}</option>
+            ))}
+          </select>
+        </div>
+        <button class="swap-btn batch-swap-btn" aria-label="Swap batch units">⇄</button>
+        <div class="batch-field">
+          <label>To unit</label>
+          <select class="input batch-to-unit" aria-label="Batch to unit">
+            {category.units.map(u => (
+              <option value={u.id} selected={u.id === defaultTo.id}>{u.symbol} — {u.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div class="batch-io">
+        <div class="batch-col">
+          <label>Values to convert (one per line)</label>
+          <textarea class="input batch-input" rows="6" placeholder="1&#10;5&#10;10&#10;25&#10;100" aria-label="Input values"></textarea>
+        </div>
+        <div class="batch-col">
+          <label>Results</label>
+          <textarea class="input batch-output" rows="6" readonly aria-label="Converted results" aria-live="polite"></textarea>
+        </div>
+      </div>
+      <div class="converter-actions">
+        <button class="btn btn-primary btn-sm batch-copy-btn">Copy results</button>
+        <button class="btn btn-ghost btn-sm batch-clear-btn">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History drawer -->
+  <details class="history-drawer">
+    <summary class="history-toggle">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Recent conversions
+    </summary>
+    <div class="history-list" aria-label="Recent conversions" role="list"></div>
+    <button class="history-clear-btn">Clear history</button>
+  </details>
+</div>
+
+<!-- Unit info dialog -->
+<dialog class="unit-info-dialog" id={`unit-dialog-${category.id}`} aria-labelledby={`unit-dialog-title-${category.id}`}>
+  <div class="unit-info-content">
+    <div class="unit-info-header">
+      <h3 id={`unit-dialog-title-${category.id}`} class="unit-info-name">Unit</h3>
+      <button class="unit-info-close" aria-label="Close">✕</button>
+    </div>
+    <p class="unit-info-symbol"></p>
+    <p class="unit-info-desc"></p>
+  </div>
+</dialog>
+
+<!-- Toast (one per page, positioned fixed) -->
+<div class="toast" id="copy-toast" role="status" aria-live="polite">Copied!</div>
+
+<style>
+  /* Widget header */
+  .widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-md);
+    padding: 0 0 var(--sp-lg);
+    border-bottom: 1px solid var(--color-hairline);
+    margin-bottom: var(--sp-xl);
+    flex-wrap: wrap;
+  }
+
+  .widget-tabs {
+    display: flex;
+    gap: 4px;
+  }
+
+  .widget-tab {
+    padding: 5px 14px;
+    border-radius: var(--rounded-pill);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-ink-mute);
+    background: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .widget-tab.active {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+  .widget-tab:not(.active):hover {
+    background: var(--color-canvas-soft);
+    border-color: var(--color-hairline);
+    color: var(--color-ink);
+  }
+
+  .widget-header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-md);
+  }
+
+  .fav-btn {
+    font-size: 18px;
+    line-height: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-ink-mute);
+    transition: color 0.15s, transform 0.15s;
+    padding: 2px;
+  }
+  .fav-btn:hover { color: #f59e0b; transform: scale(1.2); }
+  .fav-btn.starred { color: #f59e0b; }
+
+  .precision-wrap {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .precision-label {
+    font-size: 11px;
+    color: var(--color-ink-mute);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .precision-select {
+    font-size: 12px;
+    padding: 3px 20px 3px 6px;
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-sm);
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    cursor: pointer;
+    min-height: auto;
+  }
+
+  /* Fields */
+  .converter-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .converter-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-ink-mute);
+    margin-bottom: var(--sp-xs);
+  }
+
+  .input-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-sm);
+  }
+
+  @media (max-width: 520px) {
+    .input-group { grid-template-columns: 1fr; }
+  }
+
+  .unit-select-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .unit-select-wrap .input { flex: 1; }
+
+  .unit-info-btn {
+    font-size: 14px;
+    color: var(--color-ink-mute);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .unit-info-btn:hover {
+    color: var(--color-primary);
+    background: var(--color-primary-subtle);
+  }
+
+  /* ── Searchable combobox ── */
+  .unit-combobox {
+    position: relative;
+    flex: 1;
+  }
+  .unit-combobox-input {
+    width: 100%;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .unit-combobox-input:focus { cursor: text; }
+  .unit-combobox-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: var(--color-canvas);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-md);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+    max-height: 230px;
+    overflow-y: auto;
+    padding: 4px;
+    list-style: none;
+    margin: 0;
+  }
+  .unit-combobox-list[hidden] { display: none; }
+  .unit-combobox-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: var(--rounded-sm);
+    cursor: pointer;
+    user-select: none;
+  }
+  .unit-combobox-list li:hover { background: var(--color-canvas-soft); }
+  .unit-combobox-list li[aria-selected="true"],
+  .unit-combobox-list li.combobox-focused {
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+  }
+  .unit-combobox-list li[hidden] { display: none; }
+  .unit-opt-sym {
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 40px;
+    color: var(--color-primary);
+    font-feature-settings: "tnum";
+  }
+  .unit-opt-name {
+    font-size: 13px;
+    color: var(--color-ink-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .unit-combobox-list li[aria-selected="true"] .unit-opt-sym,
+  .unit-combobox-list li.combobox-focused .unit-opt-sym { color: inherit; }
+
+  .converter-middle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-md) 0;
+  }
+
+  /* Formula */
+  .formula-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    padding: var(--sp-sm) var(--sp-md);
+    background: var(--color-canvas-soft);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-md);
+    margin-top: var(--sp-lg);
+    min-height: 36px;
+  }
+  .formula-icon {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-primary);
+    flex-shrink: 0;
+  }
+  .formula-text {
+    font-family: var(--font-base);
+    font-size: 13px;
+    color: var(--color-ink-2);
+    font-feature-settings: "tnum";
+    letter-spacing: -0.2px;
+  }
+
+  /* Batch */
+  .batch-controls { display: flex; flex-direction: column; gap: var(--sp-lg); }
+
+  .batch-units {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--sp-sm);
+    flex-wrap: wrap;
+  }
+  .batch-field { flex: 1; min-width: 160px; }
+  .batch-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-ink-mute);
+    margin-bottom: var(--sp-xs);
+  }
+
+  .batch-io {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-md);
+  }
+  @media (max-width: 520px) { .batch-io { grid-template-columns: 1fr; } }
+
+  .batch-col label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-ink-mute);
+    margin-bottom: var(--sp-xs);
+  }
+
+  .batch-input, .batch-output {
+    resize: vertical;
+    font-family: var(--font-base);
+    font-feature-settings: "tnum";
+    line-height: 1.6;
+    font-size: 14px;
+  }
+
+  /* History drawer */
+  .history-drawer {
+    margin-top: var(--sp-lg);
+    border-top: 1px solid var(--color-hairline);
+    padding-top: var(--sp-md);
+  }
+
+  .history-toggle {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-ink-mute);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    list-style: none;
+    user-select: none;
+    transition: color 0.15s;
+  }
+  .history-toggle:hover { color: var(--color-ink); }
+  .history-toggle::-webkit-details-marker { display: none; }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: var(--sp-sm);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px var(--sp-sm);
+    border-radius: var(--rounded-sm);
+    font-size: 13px;
+    color: var(--color-ink-2);
+    cursor: pointer;
+    border: none;
+    background: none;
+    text-align: left;
+    transition: background 0.12s;
+    font-feature-settings: "tnum";
+    width: 100%;
+  }
+  .history-item:hover { background: var(--color-canvas-soft); color: var(--color-primary); }
+
+  .history-clear-btn {
+    font-size: 11px;
+    color: var(--color-ink-mute);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--sp-xs) 0;
+    text-decoration: underline;
+    margin-top: var(--sp-xs);
+  }
+  .history-clear-btn:hover { color: var(--color-ruby); }
+
+  /* Unit info dialog */
+  .unit-info-dialog {
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-lg);
+    padding: 0;
+    box-shadow: var(--shadow-2);
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    max-width: 360px;
+    width: 90vw;
+  }
+  .unit-info-dialog::backdrop {
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(2px);
+  }
+  .unit-info-content { padding: var(--sp-xl); }
+  .unit-info-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-sm);
+  }
+  .unit-info-name { font-size: 18px; font-weight: 400; letter-spacing: -0.2px; }
+  .unit-info-close {
+    font-size: 14px;
+    color: var(--color-ink-mute);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--rounded-sm);
+    transition: background 0.12s;
+  }
+  .unit-info-close:hover { background: var(--color-canvas-soft); }
+  .unit-info-symbol {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.5px;
+    color: var(--color-primary);
+    font-feature-settings: "tnum";
+    margin-bottom: var(--sp-sm);
+  }
+  .unit-info-desc { font-size: 14px; color: var(--color-ink-2); line-height: 1.6; }
+
+  /* Compact variant */
+  .converter-widget--compact .input-lg {
+    font-size: 18px;
+    min-height: 48px;
+  }
+
+  /* Keyboard shortcut hint */
+  kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    border: 1px solid var(--color-hairline);
+    border-radius: 3px;
+    font-size: 10px;
+    font-family: var(--font-base);
+    color: var(--color-ink-mute);
+    background: var(--color-canvas-soft);
+    vertical-align: middle;
+    line-height: 1.4;
+  }
+</style>
+
+<script>
+  import { categories, convert, convertFuel, convertNumBase, getFormula, formatResult } from '../lib/units';
+
+  // ─── Keyboard shortcut help modal ─────────────────────────
+  let helpDialog: HTMLDialogElement | null = null;
+  document.addEventListener('keydown', (e) => {
+    // Don't fire on inputs
+    const tag = (document.activeElement as HTMLElement)?.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
+    if (e.key === '?') {
+      if (!helpDialog) {
+        helpDialog = document.createElement('dialog');
+        helpDialog.className = 'unit-info-dialog';
+        helpDialog.innerHTML = `
+          <div class="unit-info-content">
+            <div class="unit-info-header">
+              <h3 class="unit-info-name">Keyboard Shortcuts</h3>
+              <button class="unit-info-close" aria-label="Close">✕</button>
+            </div>
+            <table style="width:100%;font-size:13px;border-collapse:collapse;">
+              <tr><td style="padding:4px 0;color:var(--color-ink-mute)"><kbd>S</kbd></td><td style="padding:4px 8px;">Swap units</td></tr>
+              <tr><td style="padding:4px 0;color:var(--color-ink-mute)"><kbd>C</kbd></td><td style="padding:4px 8px;">Copy result</td></tr>
+              <tr><td style="padding:4px 0;color:var(--color-ink-mute)"><kbd>Esc</kbd></td><td style="padding:4px 8px;">Reset converter</td></tr>
+              <tr><td style="padding:4px 0;color:var(--color-ink-mute)"><kbd>?</kbd></td><td style="padding:4px 8px;">Show this help</td></tr>
+            </table>
+          </div>`;
+        helpDialog.querySelector('.unit-info-close')?.addEventListener('click', () => helpDialog?.close());
+        document.body.appendChild(helpDialog);
+      }
+      helpDialog.showModal();
+    }
+  });
+
+  // ─── Per-widget initialization ─────────────────────────────
+  document.querySelectorAll<HTMLElement>('.converter-widget').forEach(widget => {
+    const categoryId = widget.dataset.category!;
+    const isCurrency = widget.dataset.isCurrency === 'true';
+    const isFuel     = widget.dataset.isFuel === 'true';
+    const isNumBase  = widget.dataset.isNumbase === 'true';
+
+    const cat = categories.find(c => c.id === categoryId)!;
+    if (!cat) return;
+
+    // DOM refs — single mode
+    const fromValueEl  = widget.querySelector<HTMLInputElement>('.from-value')!;
+    const toValueEl    = widget.querySelector<HTMLInputElement>('.to-value')!;
+    const fromUnitEl   = widget.querySelector<HTMLSelectElement>('.from-unit')!;
+    const toUnitEl     = widget.querySelector<HTMLSelectElement>('.to-unit')!;
+    const swapBtn      = widget.querySelector<HTMLButtonElement>('.swap-btn')!;
+    const copyBtn      = widget.querySelector<HTMLButtonElement>('.copy-btn')!;
+    const shareBtn     = widget.querySelector<HTMLButtonElement>('.share-btn')!;
+    const resetBtn     = widget.querySelector<HTMLButtonElement>('.reset-btn')!;
+    const formulaEl    = widget.querySelector<HTMLElement>('.formula-text')!;
+    const favBtn       = widget.querySelector<HTMLButtonElement>('.fav-btn')!;
+    const precisionSel = widget.querySelector<HTMLSelectElement>('.precision-select')!;
+    const fromInfoBtn  = widget.querySelector<HTMLButtonElement>('.from-info-btn');
+    const toInfoBtn    = widget.querySelector<HTMLButtonElement>('.to-info-btn');
+    const infoDialog   = document.getElementById(`unit-dialog-${categoryId}`) as HTMLDialogElement | null;
+    const rateBadge    = document.getElementById(`rate-badge-${categoryId}`);
+
+    // DOM refs — batch mode
+    const batchFromUnit = widget.querySelector<HTMLSelectElement>('.batch-from-unit');
+    const batchToUnit   = widget.querySelector<HTMLSelectElement>('.batch-to-unit');
+    const batchSwapBtn  = widget.querySelector<HTMLButtonElement>('.batch-swap-btn');
+    const batchInput    = widget.querySelector<HTMLTextAreaElement>('.batch-input');
+    const batchOutput   = widget.querySelector<HTMLTextAreaElement>('.batch-output');
+    const batchCopyBtn  = widget.querySelector<HTMLButtonElement>('.batch-copy-btn');
+    const batchClearBtn = widget.querySelector<HTMLButtonElement>('.batch-clear-btn');
+
+    // DOM refs — history
+    const historyList      = widget.querySelector<HTMLElement>('.history-list')!;
+    const historyClearBtn  = widget.querySelector<HTMLButtonElement>('.history-clear-btn')!;
+
+    // ── Combobox init ──────────────────────────────────────
+    function initCombobox(hiddenSel: HTMLSelectElement, comboWrap: HTMLElement) {
+      const input = comboWrap.querySelector<HTMLInputElement>('.unit-combobox-input')!;
+      const list  = comboWrap.querySelector<HTMLElement>('.unit-combobox-list')!;
+      const items = [...list.querySelectorAll<HTMLElement>('li')];
+
+      function getDisplayText(unitId: string) {
+        const li = items.find(i => i.dataset.unitId === unitId);
+        if (!li) return unitId;
+        return `${li.querySelector('.unit-opt-sym')?.textContent ?? ''} — ${li.querySelector('.unit-opt-name')?.textContent ?? ''}`;
+      }
+
+      function openList() {
+        list.hidden = false;
+        input.removeAttribute('readonly');
+        input.value = '';
+        items.forEach(li => { li.hidden = false; li.classList.remove('combobox-focused'); });
+        list.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+      }
+
+      function closeList() {
+        list.hidden = true;
+        input.setAttribute('readonly', '');
+        items.forEach(li => li.classList.remove('combobox-focused'));
+        input.value = getDisplayText(hiddenSel.value);
+      }
+
+      function selectItem(li: HTMLElement) {
+        const id = li.dataset.unitId!;
+        items.forEach(i => i.setAttribute('aria-selected', 'false'));
+        li.setAttribute('aria-selected', 'true');
+        hiddenSel.value = id;
+        hiddenSel.dispatchEvent(new Event('change', { bubbles: true }));
+        closeList();
+      }
+
+      input.addEventListener('click', () => { if (list.hidden) openList(); });
+      input.addEventListener('focus', () => { if (list.hidden) openList(); });
+
+      input.addEventListener('input', () => {
+        const q = input.value.toLowerCase();
+        items.forEach(li => {
+          const sym  = li.querySelector('.unit-opt-sym')?.textContent?.toLowerCase() ?? '';
+          const name = li.querySelector('.unit-opt-name')?.textContent?.toLowerCase() ?? '';
+          li.hidden = q.length > 0 && !sym.includes(q) && !name.includes(q);
+        });
+      });
+
+      items.forEach(li => {
+        li.addEventListener('mousedown', e => e.preventDefault());
+        li.addEventListener('click', () => selectItem(li));
+      });
+
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Escape')     { closeList(); input.blur(); return; }
+        if (list.hidden && (e.key === 'ArrowDown' || e.key === 'Enter')) { openList(); return; }
+        const visible  = items.filter(li => !li.hidden);
+        const focused  = list.querySelector<HTMLElement>('.combobox-focused');
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const next = focused ? visible[visible.indexOf(focused) + 1] ?? visible[0] : visible[0];
+          focused?.classList.remove('combobox-focused');
+          next?.classList.add('combobox-focused');
+          next?.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const prev = focused ? visible[visible.indexOf(focused) - 1] ?? visible[visible.length - 1] : visible[visible.length - 1];
+          focused?.classList.remove('combobox-focused');
+          prev?.classList.add('combobox-focused');
+          prev?.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          const target = focused ?? (visible.length === 1 ? visible[0] : null);
+          if (target) selectItem(target);
+        }
+      });
+
+      input.addEventListener('blur', () => { setTimeout(() => { if (!comboWrap.matches(':focus-within')) closeList(); }, 150); });
+
+      document.addEventListener('click', e => {
+        if (!comboWrap.contains(e.target as Node) && !list.hidden) closeList();
+      });
+
+      return { syncDisplay() { closeList(); } };
+    }
+
+    const fromComboEl = widget.querySelector<HTMLElement>('.unit-combobox[data-for="from"]');
+    const toComboEl   = widget.querySelector<HTMLElement>('.unit-combobox[data-for="to"]');
+    const fromCombo   = fromComboEl ? initCombobox(fromUnitEl, fromComboEl) : null;
+    const toCombo     = toComboEl   ? initCombobox(toUnitEl,   toComboEl)   : null;
+
+    function syncComboboxDisplays() {
+      fromCombo?.syncDisplay();
+      toCombo?.syncDisplay();
+    }
+
+    // ── Precision ──────────────────────────────────────────
+    let precision = 4;
+    precisionSel?.addEventListener('change', () => {
+      precision = Number(precisionSel.value);
+      doConvert();
+    });
+
+    function fmt(value: number): string {
+      if (!isFinite(value)) return '—';
+      if (value === 0) return '0';
+      const abs = Math.abs(value);
+      if (abs >= 1e12 || (abs < 1e-8 && abs > 0)) return value.toExponential(precision === 10 ? 6 : Math.min(precision, 6));
+      let decimals = precision === 10 ? 10 : precision;
+      const str = value.toFixed(decimals);
+      return str.includes('.') ? str.replace(/\.?0+$/, '') : str;
+    }
+
+    // ── URL state ──────────────────────────────────────────
+    function readURLParams() {
+      const params = new URLSearchParams(window.location.search);
+      const pFrom  = params.get('from');
+      const pTo    = params.get('to');
+      const pVal   = params.get('value');
+      if (pFrom && cat.units.some(u => u.id === pFrom)) fromUnitEl.value = pFrom;
+      if (pTo   && cat.units.some(u => u.id === pTo))   toUnitEl.value   = pTo;
+      if (pVal  && (isNumBase || !isNaN(Number(pVal)))) fromValueEl.value = pVal;
+    }
+
+    function pushURLState() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        params.set('from',  fromUnitEl.value);
+        params.set('to',    toUnitEl.value);
+        params.set('value', fromValueEl.value || '1');
+        history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+      } catch {}
+    }
+
+    // ── Currency live rates ─────────────────────────────────
+    let currencyRates: Record<string, number> = {};
+
+    async function loadCurrencyRates() {
+      try {
+        const cached = sessionStorage.getItem('uc_fx_rates');
+        const cachedTime = Number(sessionStorage.getItem('uc_fx_time') || '0');
+        if (cached && Date.now() - cachedTime < 3_600_000) {
+          currencyRates = JSON.parse(cached);
+        } else {
+          const controller = new AbortController();
+          const timeoutId  = setTimeout(() => controller.abort(), 8000);
+          const res  = await fetch('https://open.er-api.com/v6/latest/USD', { signal: controller.signal });
+          clearTimeout(timeoutId);
+          const data = await res.json();
+          if (data.result === 'success') {
+            currencyRates = data.rates;
+            sessionStorage.setItem('uc_fx_rates', JSON.stringify(currencyRates));
+            sessionStorage.setItem('uc_fx_time', String(Date.now()));
+          }
+        }
+        if (rateBadge && Object.keys(currencyRates).length > 0) {
+          rateBadge.innerHTML = `<span class="live-dot"></span> Live · ${new Date().toLocaleTimeString()}`;
+        }
+      } catch {
+        if (rateBadge) rateBadge.innerHTML = `<span class="live-dot" style="background:#f59e0b"></span> Approximate rates`;
+      }
+      doConvert();
+    }
+
+    // ── Core conversion ─────────────────────────────────────
+    function doConvert() {
+      // Number base: string-based conversion
+      if (isNumBase) {
+        const rawStr = fromValueEl.value.trim();
+        if (!rawStr) { toValueEl.value = ''; if (formulaEl) formulaEl.textContent = '—'; return; }
+        const fromId   = fromUnitEl.value;
+        const toId     = toUnitEl.value;
+        const fromBase = cat.units.find(u => u.id === fromId)?.factor ?? 10;
+        const toBase   = cat.units.find(u => u.id === toId)?.factor ?? 10;
+        const resultStr = convertNumBase(rawStr, fromBase, toBase);
+        toValueEl.value = resultStr;
+        if (formulaEl) formulaEl.textContent = resultStr !== '—' ? `${rawStr} (base ${fromBase}) = ${resultStr} (base ${toBase})` : '—';
+        updateTable(0, fromId);
+        pushURLState();
+        return;
+      }
+
+      const raw   = parseFloat(fromValueEl.value);
+      if (isNaN(raw)) { toValueEl.value = ''; if (formulaEl) formulaEl.textContent = '—'; return; }
+
+      const fromId = fromUnitEl.value;
+      const toId   = toUnitEl.value;
+      const fromU  = cat.units.find(u => u.id === fromId)!;
+      const toU    = cat.units.find(u => u.id === toId)!;
+
+      let result: number;
+      if (isCurrency && Object.keys(currencyRates).length > 0) {
+        const usdVal = raw / (currencyRates[fromId] ?? 1);
+        result = usdVal * (currencyRates[toId] ?? 1);
+      } else if (isFuel) {
+        result = convertFuel(raw, fromId, toId);
+      } else {
+        result = convert(raw, fromU, toU, categoryId);
+      }
+
+      toValueEl.value = fmt(result);
+
+      // Formula
+      if (formulaEl) {
+        if (isCurrency) {
+          formulaEl.textContent = `${raw} ${fromId} × ${fmt(currencyRates[toId] / currencyRates[fromId] || 1)} = ${fmt(result)} ${toId}`;
+        } else {
+          formulaEl.textContent = getFormula(raw, fromU, toU, categoryId, result);
+        }
+      }
+
+      updateTable(raw, fromId, result);
+      pushURLState();
+    }
+
+    // ── Table update ────────────────────────────────────────
+    function updateTable(inputValue: number, fromId: string, primaryResult?: number) {
+      const tableBody = document.getElementById(`table-body-${categoryId}`);
+      if (!tableBody) return;
+
+      if (isNumBase) {
+        const rawStr   = fromValueEl.value.trim();
+        const fromBase = cat.units.find(u => u.id === fromId)?.factor ?? 10;
+        const fromU    = cat.units.find(u => u.id === fromId)!;
+        tableBody.querySelectorAll<HTMLTableRowElement>('tr').forEach(row => {
+          const toId   = row.dataset.unitId!;
+          const toBase = cat.units.find(u => u.id === toId)?.factor ?? 10;
+          const cell   = row.querySelector<HTMLElement>('.td-value');
+          if (!cell) return;
+          cell.textContent = rawStr ? convertNumBase(rawStr, fromBase, toBase) : '—';
+        });
+        const titleEl = document.querySelector<HTMLElement>('.table-title');
+        if (titleEl && fromU) titleEl.textContent = `${rawStr || '0'} (${fromU.symbol}) equals…`;
+        return;
+      }
+
+      const fromU = cat.units.find(u => u.id === fromId)!;
+      tableBody.querySelectorAll<HTMLTableRowElement>('tr').forEach(row => {
+        const toId = row.dataset.unitId!;
+        const toU  = cat.units.find(u => u.id === toId);
+        const cell = row.querySelector<HTMLElement>('.td-value');
+        if (!cell || !toU) return;
+        let res: number;
+        if (isCurrency && Object.keys(currencyRates).length > 0) {
+          res = (inputValue / (currencyRates[fromId] ?? 1)) * (currencyRates[toId] ?? 1);
+        } else if (isFuel) {
+          res = convertFuel(inputValue, fromId, toId);
+        } else {
+          res = convert(inputValue, fromU, toU, categoryId);
+        }
+        cell.textContent = fmt(res);
+      });
+      const titleEl = document.querySelector<HTMLElement>('.table-title');
+      if (titleEl && fromU) titleEl.textContent = `${inputValue} ${fromU.name} equals…`;
+    }
+
+    // ── History ─────────────────────────────────────────────
+    function loadHistory(): Array<{ label: string; fromId: string; toId: string; value: string; catId: string }> {
+      try { return JSON.parse(localStorage.getItem('uc_history') || '[]'); } catch { return []; }
+    }
+
+    function saveToHistory(fromId: string, toId: string, inputVal: string, resultVal: string) {
+      const fromU = cat.units.find(u => u.id === fromId);
+      const toU   = cat.units.find(u => u.id === toId);
+      if (!fromU || !toU || !inputVal || !resultVal) return;
+      const history = loadHistory().filter(h => !(h.catId === categoryId && h.fromId === fromId && h.toId === toId && h.value === inputVal));
+      history.unshift({ label: `${inputVal} ${fromU.symbol} = ${resultVal} ${toU.symbol}`, fromId, toId, value: inputVal, catId: categoryId });
+      localStorage.setItem('uc_history', JSON.stringify(history.slice(0, 20)));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      if (!historyList) return;
+      const history = loadHistory().filter(h => h.catId === categoryId);
+      historyList.innerHTML = '';
+      if (history.length === 0) {
+        historyList.innerHTML = '<p style="font-size:12px;color:var(--color-ink-mute);padding:4px 8px;">No recent conversions yet</p>';
+        return;
+      }
+      history.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'history-item';
+        btn.textContent = item.label;
+        btn.setAttribute('role', 'listitem');
+        btn.addEventListener('click', () => {
+          fromUnitEl.value  = item.fromId;
+          toUnitEl.value    = item.toId;
+          fromValueEl.value = item.value;
+          syncComboboxDisplays();
+          doConvert();
+        });
+        historyList.appendChild(btn);
+      });
+    }
+
+    // ── Favorites ──────────────────────────────────────────
+    function getFavKey() { return `uc_fav_${categoryId}_${fromUnitEl.value}_${toUnitEl.value}`; }
+    function isFavorited() { return !!localStorage.getItem(getFavKey()); }
+
+    function updateFavBtn() {
+      if (!favBtn) return;
+      const starred = isFavorited();
+      favBtn.textContent = starred ? '★' : '☆';
+      favBtn.setAttribute('aria-label', starred ? 'Remove from favorites' : 'Add to favorites');
+      favBtn.classList.toggle('starred', starred);
+    }
+
+    favBtn?.addEventListener('click', () => {
+      const key = getFavKey();
+      if (isFavorited()) {
+        localStorage.removeItem(key);
+      } else {
+        const fromU = cat.units.find(u => u.id === fromUnitEl.value);
+        const toU   = cat.units.find(u => u.id === toUnitEl.value);
+        if (fromU && toU) {
+          localStorage.setItem(key, JSON.stringify({ categoryId, fromId: fromUnitEl.value, toId: toUnitEl.value, label: `${cat.name}: ${fromU.symbol} → ${toU.symbol}` }));
+        }
+      }
+      updateFavBtn();
+    });
+
+    // ── Unit info popover ─────────────────────────────────
+    function showUnitInfo(unitId: string) {
+      const u = cat.units.find(u => u.id === unitId);
+      if (!u || !infoDialog) return;
+      infoDialog.querySelector<HTMLElement>('.unit-info-name')!.textContent  = u.name;
+      infoDialog.querySelector<HTMLElement>('.unit-info-symbol')!.textContent = u.symbol;
+      infoDialog.querySelector<HTMLElement>('.unit-info-desc')!.textContent  = u.info ?? 'No additional information available.';
+      infoDialog.showModal();
+    }
+
+    infoDialog?.querySelector('.unit-info-close')?.addEventListener('click', () => infoDialog?.close());
+    infoDialog?.addEventListener('click', e => { if (e.target === infoDialog) infoDialog.close(); });
+    fromInfoBtn?.addEventListener('click', () => showUnitInfo(fromUnitEl.value));
+    toInfoBtn?.addEventListener('click',   () => showUnitInfo(toUnitEl.value));
+
+    // ── Batch mode ─────────────────────────────────────────
+    function doBatch() {
+      if (!batchInput || !batchOutput) return;
+      const lines  = batchInput.value.split('\n').map(l => l.trim()).filter(Boolean);
+      const fromId = batchFromUnit?.value ?? cat.defaultFrom;
+      const toId   = batchToUnit?.value   ?? cat.defaultTo;
+      const fromU  = cat.units.find(u => u.id === fromId)!;
+      const toU    = cat.units.find(u => u.id === toId)!;
+      const results = lines.map(line => {
+        if (isNumBase) {
+          const fromBase = cat.units.find(u => u.id === fromId)?.factor ?? 10;
+          const toBase   = cat.units.find(u => u.id === toId)?.factor ?? 10;
+          const res = convertNumBase(line, fromBase, toBase);
+          return res === '—' ? `${line} → (invalid)` : res;
+        }
+        const val = parseFloat(line);
+        if (isNaN(val)) return `${line} → (invalid)`;
+        let res: number;
+        if (isCurrency && Object.keys(currencyRates).length > 0) {
+          res = (val / (currencyRates[fromId] ?? 1)) * (currencyRates[toId] ?? 1);
+        } else if (isFuel) {
+          res = convertFuel(val, fromId, toId);
+        } else {
+          res = convert(val, fromU, toU, categoryId);
+        }
+        return fmt(res);
+      });
+      batchOutput.value = results.join('\n');
+    }
+
+    batchInput?.addEventListener('input', doBatch);
+    batchFromUnit?.addEventListener('change', doBatch);
+    batchToUnit?.addEventListener('change', doBatch);
+    batchSwapBtn?.addEventListener('click', () => {
+      if (!batchFromUnit || !batchToUnit) return;
+      [batchFromUnit.value, batchToUnit.value] = [batchToUnit.value, batchFromUnit.value];
+      doBatch();
+    });
+    batchCopyBtn?.addEventListener('click', () => {
+      if (batchOutput?.value) {
+        navigator.clipboard.writeText(batchOutput.value).then(() => showToast('Results copied!'));
+      }
+    });
+    batchClearBtn?.addEventListener('click', () => {
+      if (batchInput)  batchInput.value  = '';
+      if (batchOutput) batchOutput.value = '';
+    });
+
+    // ── Tabs ───────────────────────────────────────────────
+    widget.querySelectorAll<HTMLButtonElement>('.widget-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        widget.querySelectorAll('.widget-tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+        const tabId = tab.dataset.tab!;
+        widget.querySelectorAll<HTMLElement>('.widget-panel').forEach(p => { p.hidden = p.id !== `panel-${tabId}`; });
+        if (tabId === 'batch' && batchInput?.value) doBatch();
+      });
+    });
+
+    // ── Swap ───────────────────────────────────────────────
+    swapBtn?.addEventListener('click', () => {
+      const tmp = fromUnitEl.value;
+      fromUnitEl.value = toUnitEl.value;
+      toUnitEl.value   = tmp;
+      const tmpVal     = toValueEl.value;
+      if (tmpVal) fromValueEl.value = tmpVal;
+      syncComboboxDisplays();
+      doConvert();
+      updateFavBtn();
+    });
+
+    // ── Copy ───────────────────────────────────────────────
+    function copyResult() {
+      const fromLabel = fromUnitEl.options[fromUnitEl.selectedIndex].text.split(' — ')[0];
+      const toLabel   = toUnitEl.options[toUnitEl.selectedIndex].text.split(' — ')[0];
+      const text = `${fromValueEl.value} ${fromLabel} = ${toValueEl.value} ${toLabel}`;
+      navigator.clipboard.writeText(text).then(() => showToast('Copied!'));
+    }
+
+    copyBtn?.addEventListener('click', copyResult);
+
+    // ── Share ──────────────────────────────────────────────
+    shareBtn?.addEventListener('click', () => {
+      const url = window.location.href;
+      if (navigator.share) {
+        navigator.share({ title: document.title, url }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(url).then(() => showToast('Link copied!'));
+      }
+    });
+
+    // ── Reset ──────────────────────────────────────────────
+    resetBtn?.addEventListener('click', () => {
+      fromValueEl.value = isNumBase ? '10' : '1';
+      fromUnitEl.value  = cat.defaultFrom;
+      toUnitEl.value    = cat.defaultTo;
+      syncComboboxDisplays();
+      doConvert();
+      updateFavBtn();
+    });
+
+    // ── History controls ───────────────────────────────────
+    historyClearBtn?.addEventListener('click', () => {
+      const all = loadHistory().filter(h => h.catId !== categoryId);
+      localStorage.setItem('uc_history', JSON.stringify(all));
+      renderHistory();
+    });
+
+    // ── Keyboard shortcuts (per widget) ────────────────────
+    document.addEventListener('keydown', (e) => {
+      const tag = (document.activeElement as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      if (e.key === 's' || e.key === 'S') { swapBtn?.click(); e.preventDefault(); }
+      if (e.key === 'c' || e.key === 'C') { copyResult(); e.preventDefault(); }
+      if (e.key === 'Escape')             { resetBtn?.click(); }
+    });
+
+    // ── Unit/value change listeners ────────────────────────
+    fromValueEl.addEventListener('input', doConvert);
+    fromUnitEl.addEventListener('change', () => {
+      localStorage.setItem(`uc_from_${categoryId}`, fromUnitEl.value);
+      doConvert(); updateFavBtn();
+    });
+    toUnitEl.addEventListener('change', () => {
+      localStorage.setItem(`uc_to_${categoryId}`, toUnitEl.value);
+      doConvert(); updateFavBtn();
+    });
+    fromValueEl.addEventListener('change', () => {
+      // Save to history on blur
+      if (toValueEl.value) saveToHistory(fromUnitEl.value, toUnitEl.value, fromValueEl.value, toValueEl.value);
+    });
+
+    // ── Restore persisted unit choices ─────────────────────
+    const storedFrom = localStorage.getItem(`uc_from_${categoryId}`);
+    const storedTo   = localStorage.getItem(`uc_to_${categoryId}`);
+    if (storedFrom && cat.units.some(u => u.id === storedFrom)) fromUnitEl.value = storedFrom;
+    if (storedTo   && cat.units.some(u => u.id === storedTo))   toUnitEl.value   = storedTo;
+
+    // ── Init ───────────────────────────────────────────────
+    readURLParams();
+    syncComboboxDisplays();
+    if (isCurrency) { loadCurrencyRates(); } else { doConvert(); }
+    renderHistory();
+    updateFavBtn();
+  });
+
+  // ── Toast helper ──────────────────────────────────────────
+  function showToast(msg: string) {
+    let toast = document.getElementById('copy-toast') as HTMLElement | null;
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'copy-toast';
+      toast.className = 'toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast!.classList.remove('show'), 2200);
+  }
+</script>

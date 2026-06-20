@@ -1,0 +1,375 @@
+---
+import Layout from '../../components/Layout.astro';
+import ConverterWidget from '../../components/ConverterWidget.astro';
+import ConversionTable from '../../components/ConversionTable.astro';
+import { categories, categoryMap } from '../../lib/units';
+
+export async function getStaticPaths() {
+  return categories.map(cat => ({
+    params: { category: cat.id },
+    props:  { category: cat },
+  }));
+}
+
+const { category } = Astro.props;
+const siteUrl = 'https://prounitconverter.com';
+const pageUrl = `${siteUrl}/convert/${category.id}`;
+
+const fromUnit = category.units.find(u => u.id === category.defaultFrom) ?? category.units[0];
+
+// Build dynamic SEO content per category
+const unitNames = category.units.map(u => u.name).join(', ');
+
+const titleMap: Record<string, string> = {
+  length:      `Length Converter — Convert Feet to Meters, Inches to cm & More`,
+  weight:      `Weight Converter — Convert kg to lbs, Ounces to Grams & More`,
+  temperature: `Temperature Converter — Celsius to Fahrenheit, Kelvin & More`,
+  area:        `Area Converter — Convert Square Feet, Acres, Hectares & More`,
+  volume:      `Volume Converter — Convert Liters, Gallons, ml & More`,
+  speed:       `Speed Converter — Convert mph, km/h, m/s & More`,
+  digital:     `Digital Storage Converter — Convert GB, MB, TB & More`,
+  time:        `Time Converter — Convert Hours, Minutes, Seconds & More`,
+  currency:    `Currency Converter — Live Exchange Rates USD, EUR, GBP & More`,
+  angle:       `Angle Converter — Convert Degrees, Radians, Gradians & More`,
+  pressure:    `Pressure Converter — Convert PSI, Bar, Pascal, kPa & More`,
+  energy:      `Energy Converter — Convert Joules, kWh, Calories, BTU & More`,
+  power:       `Power Converter — Convert Watts, Horsepower, kW & More`,
+  density:     `Density Converter — Convert kg/m³, g/cm³, lb/ft³ & More`,
+  fuel:        `Fuel Consumption Converter — Convert MPG, L/100km & More`,
+  force:       `Force Converter — Convert Newtons, Pound-force, Kilogram-force & More`,
+  voltage:     `Voltage Converter — Convert Volts, Millivolts, Kilovolts & More`,
+  cooking:     `Cooking Measurement Converter — Convert Cups, Tablespoons, mL & More`,
+  numbase:     `Number Base Converter — Convert Decimal, Binary, Hex, Octal`,
+};
+
+const descriptionMap: Record<string, string> = {
+  length:      `Free length converter. Convert feet to meters, inches to cm, miles to km, and more. Instant results, full conversion table.`,
+  weight:      `Free weight converter. Convert kilograms to pounds, ounces to grams, stones and more. Instant, accurate, free.`,
+  temperature: `Free temperature converter. Convert Celsius to Fahrenheit, Kelvin and back. Formula explained, instant results.`,
+  area:        `Free area converter. Convert square feet to square meters, acres to hectares, and more. Instant results.`,
+  volume:      `Free volume converter. Convert liters to gallons, milliliters to fluid ounces, cups and more.`,
+  speed:       `Free speed converter. Convert miles per hour to km/h, meters per second, knots and more.`,
+  digital:     `Free digital storage converter. Convert gigabytes to megabytes, terabytes, bytes and more.`,
+  time:        `Free time converter. Convert hours to minutes, seconds to hours, days to weeks and more.`,
+  currency:    `Free currency converter with live exchange rates. Convert USD, EUR, GBP, JPY, INR and 6 more currencies.`,
+  angle:       `Free angle converter. Convert degrees to radians, gradians, arcminutes, arcseconds, and more. Instant results.`,
+  pressure:    `Free pressure converter. Convert PSI to kPa, bar to atm, mmHg and more. Instant, accurate, free.`,
+  energy:      `Free energy converter. Convert joules, kilowatt-hours, calories, BTU, electronvolts, and more.`,
+  power:       `Free power converter. Convert watts to horsepower, kilowatts, BTU per hour, and more.`,
+  density:     `Free density converter. Convert kg/m³, g/cm³, lb/ft³, and more. Instant density unit conversions.`,
+  fuel:        `Free fuel consumption converter. Convert miles per gallon (MPG) to liters per 100km and more.`,
+  force:       `Free force converter. Convert Newtons to pound-force, kilogram-force, dynes, and more. Instant results.`,
+  voltage:     `Free voltage converter. Convert volts to millivolts, kilovolts, microvolts, and more. Instant results.`,
+  cooking:     `Free cooking measurement converter. Convert cups, tablespoons, teaspoons, fluid ounces, and milliliters instantly.`,
+  numbase:     `Free number base converter. Convert between decimal, binary, hexadecimal, and octal number systems instantly.`,
+};
+
+const h2Map: Record<string, string> = {
+  length:      `How to Convert Length Units`,
+  weight:      `How to Convert Weight Units`,
+  temperature: `How to Convert Temperature Units`,
+  area:        `How to Convert Area Units`,
+  volume:      `How to Convert Volume Units`,
+  speed:       `How to Convert Speed Units`,
+  digital:     `How to Convert Digital Storage Units`,
+  time:        `How to Convert Time Units`,
+  currency:    `How to Convert Currencies`,
+  angle:       `How to Convert Angle Units`,
+  pressure:    `How to Convert Pressure Units`,
+  energy:      `How to Convert Energy Units`,
+  power:       `How to Convert Power Units`,
+  density:     `How to Convert Density Units`,
+  fuel:        `How to Convert Fuel Consumption Units`,
+  force:       `How to Convert Force Units`,
+  voltage:     `How to Convert Voltage Units`,
+  cooking:     `How to Convert Cooking Measurements`,
+  numbase:     `How to Convert Between Number Bases`,
+};
+
+const pageTitle = titleMap[category.id] ?? `${category.name} Converter — Free Online Tool`;
+const pageDesc  = descriptionMap[category.id] ?? `Free ${category.name.toLowerCase()} converter. Convert between ${unitNames}.`;
+const h2Text    = h2Map[category.id] ?? `How to Convert ${category.name} Units`;
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Converters', item: `${siteUrl}/convert/` },
+      { '@type': 'ListItem', position: 3, name: `${category.name} Converter`, item: pageUrl },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: `${category.name} Converter`,
+    url: pageUrl,
+    applicationCategory: 'UtilityApplication',
+    operatingSystem: 'Any',
+    description: pageDesc,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `${category.name} Units`,
+    itemListElement: category.units.map((u, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: `${u.name} (${u.symbol})`,
+    })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: category.faqs.map(faq => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: { '@type': 'Answer', text: faq.a },
+    })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: h2Text,
+    description: `How to use the ${category.name.toLowerCase()} converter.`,
+    step: [
+      { '@type': 'HowToStep', name: 'Enter a value', text: 'Type the value you want to convert into the input field.' },
+      { '@type': 'HowToStep', name: 'Select units', text: `Choose the ${category.name.toLowerCase()} units to convert from and to using the dropdowns.` },
+      { '@type': 'HowToStep', name: 'Read the result', text: 'The converted value updates instantly. Copy it with one click.' },
+    ],
+  },
+];
+
+// Generate common unit-pair links for hub-and-spoke SEO
+const commonPairLinks = category.commonPairs.map(([fromId, toId]) => {
+  const f = category.units.find(u => u.id === fromId);
+  const t = category.units.find(u => u.id === toId);
+  return f && t ? { label: `${f.name} to ${t.name}`, fromId, toId } : null;
+}).filter(Boolean);
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDesc}
+  canonical={pageUrl}
+  schemas={schemas}
+  activeCategoryId={category.id}
+  ogTitle={pageTitle}
+>
+  <!-- ═══════════════════════════════════════════
+       BREADCRUMB
+  ════════════════════════════════════════════ -->
+  <nav aria-label="Breadcrumb" class="breadcrumb-bar">
+    <div class="container">
+      <ol class="breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
+          <meta itemprop="position" content="1" />
+        </li>
+        <li aria-hidden="true" class="breadcrumb-sep">›</li>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">{category.name} Converter</span>
+          <meta itemprop="position" content="2" />
+        </li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════
+       HERO
+  ════════════════════════════════════════════ -->
+  <section class="cat-hero hero-mesh">
+    <div class="container">
+      <div class="cat-hero-inner">
+        <span class="cat-icon" aria-hidden="true">{category.icon}</span>
+        <h1 class="display-lg cat-title">{pageTitle.split(' — ')[0]}</h1>
+        <p class="body-lg cat-desc">{pageDesc}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       CONVERTER WIDGET
+  ════════════════════════════════════════════ -->
+  <section class="section-sm">
+    <div class="container">
+      <div class="widget-wrap">
+        <ConverterWidget category={category} />
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       CONVERSION TABLE
+  ════════════════════════════════════════════ -->
+  <section class="section-sm">
+    <div class="container">
+      <ConversionTable
+        category={category}
+        fromUnitId={category.defaultFrom}
+        inputValue={1}
+      />
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       HOW TO CONVERT
+  ════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="container content-narrow">
+      <h2 class="display-md" style="margin-bottom: var(--sp-lg);">{h2Text}</h2>
+      <p class="body-lg" style="color: var(--color-ink-2); margin-bottom: var(--sp-xxl);">
+        {category.id === 'temperature'
+          ? `Temperature conversions use specific formulas rather than simple multiplication. Celsius, Fahrenheit, and Kelvin each have different zero points and scales.`
+          : `To convert between ${category.name.toLowerCase()} units, multiply the value by the conversion factor between the two units. Our converter handles all the maths automatically — just enter a value and select your units.`
+        }
+      </p>
+
+      <h2 class="heading-md" style="margin-bottom: var(--sp-lg);">Common {category.name} Conversions</h2>
+      <div class="unit-links">
+        {commonPairLinks.map(link => link && (
+          <a
+            href={`/convert/${link.fromId}-to-${link.toId}`}
+            class="unit-link"
+            aria-label={link.label}
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       FAQ
+  ════════════════════════════════════════════ -->
+  {category.faqs.length > 0 && (
+    <section class="section" style="background: var(--color-canvas-soft); border-top: 1px solid var(--color-hairline);">
+      <div class="container content-narrow">
+        <h2 class="display-md" style="margin-bottom: var(--sp-xxl);">{category.name} Converter FAQ</h2>
+
+        <div class="faq-list">
+          {category.faqs.map((faq, i) => (
+            <div class="faq-item" id={`cat-faq-${i}`}>
+              <button
+                class="faq-question"
+                aria-expanded="false"
+                aria-controls={`cat-faq-answer-${i}`}
+              >
+                {faq.q}
+                <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+              <div class="faq-answer" id={`cat-faq-answer-${i}`} role="region">
+                <p>{faq.a}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- ═══════════════════════════════════════════
+       OTHER CATEGORIES
+  ════════════════════════════════════════════ -->
+  <section class="section-sm">
+    <div class="container">
+      <h2 class="heading-sm" style="color: var(--color-ink-mute); margin-bottom: var(--sp-lg); text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; font-weight: 600;">
+        Other converters
+      </h2>
+      <div class="other-cats">
+        {categories
+          .filter(c => c.id !== category.id)
+          .map(c => (
+            <a href={`/convert/${c.id}`} class="other-cat-link">
+              <span aria-hidden="true">{c.icon}</span> {c.name}
+            </a>
+          ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .cat-hero {
+    padding: var(--sp-xxl) 0;
+  }
+
+  .cat-hero-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-sm);
+    max-width: 640px;
+  }
+
+  .cat-icon {
+    font-size: 36px;
+    line-height: 1;
+    margin-bottom: var(--sp-xs);
+  }
+
+  .cat-title {
+    color: var(--color-ink);
+  }
+
+  .cat-desc {
+    color: var(--color-ink-2);
+  }
+
+  .widget-wrap {
+    max-width: 760px;
+  }
+
+  .content-narrow {
+    max-width: 760px;
+  }
+
+  .other-cats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-sm);
+  }
+
+  .other-cat-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: var(--rounded-pill);
+    font-size: 13px;
+    color: var(--color-ink-2);
+    border: 1px solid var(--color-hairline);
+    text-decoration: none;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .other-cat-link:hover {
+    border-color: var(--color-primary-subtle);
+    color: var(--color-primary);
+    background: var(--color-canvas-soft);
+    text-decoration: none;
+  }
+</style>
+
+<script>
+  // FAQ accordion
+  document.querySelectorAll<HTMLButtonElement>('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item')!;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(el => {
+        el.classList.remove('open');
+        el.querySelector('.faq-question')?.setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+</script>

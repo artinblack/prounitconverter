@@ -1,0 +1,335 @@
+---
+import Layout from '../components/Layout.astro';
+import { categories } from '../lib/units';
+
+const siteUrl = 'https://prounitconverter.com';
+
+// Build a flat unit lookup map: id → { unit, category }
+const unitMap = new Map(
+  categories.flatMap(cat => cat.units.map(u => [u.id, { unit: u, category: cat }]))
+);
+
+// Read query params at build time (compare page is client-driven)
+// The actual comparison is done client-side; here we just render the shell.
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home',    item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Compare', item: `${siteUrl}/compare` },
+    ],
+  },
+];
+
+// Serialize unit data for client-side JS
+const unitData = categories.map(cat => ({
+  id: cat.id, name: cat.name, icon: cat.icon,
+  units: cat.units.map(u => ({ id: u.id, name: u.name, symbol: u.symbol, factor: u.factor })),
+}));
+---
+
+<Layout
+  title="Compare Units Side by Side — Unit Converter"
+  description="Compare multiple units of measurement side by side. Select 2–4 units from the same category and see them visualized relative to each other."
+  canonical={`${siteUrl}/compare`}
+  keywords="compare units, unit comparison, measurement comparison, unit size comparison"
+  schemas={schemas}
+>
+  <div class="container" style="padding-top:var(--sp-2xl);padding-bottom:var(--sp-2xl);max-width:900px">
+    <header class="compare-hero">
+      <h1>Compare Units Side by Side</h1>
+      <p class="compare-lead">Select a category, enter a value, and compare multiple units at a glance.</p>
+    </header>
+
+    <!-- Controls -->
+    <div class="compare-controls card">
+      <div class="compare-row">
+        <label for="compare-category" class="compare-label">Category</label>
+        <select id="compare-category" class="input compare-cat-select">
+          {categories.filter(c => c.id !== 'numbase').map(cat => (
+            <option value={cat.id}>{cat.icon} {cat.name}</option>
+          ))}
+        </select>
+      </div>
+      <div class="compare-row">
+        <label for="compare-value" class="compare-label">Value</label>
+        <input type="number" id="compare-value" class="input" value="1" step="any" min="0" />
+      </div>
+      <div class="compare-row">
+        <label class="compare-label">Base unit</label>
+        <select id="compare-base-unit" class="input"></select>
+      </div>
+      <div class="compare-row">
+        <label class="compare-label">Units to compare</label>
+        <div id="compare-unit-checkboxes" class="unit-checkboxes"></div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="compare-results" class="compare-results" aria-live="polite">
+      <p class="compare-empty">Select units above to compare.</p>
+    </div>
+  </div>
+</Layout>
+
+<!-- Serialize unit data for client-side -->
+<script id="unit-data" type="application/json" is:inline set:html={JSON.stringify(unitData)} />
+
+<script>
+  const raw = document.getElementById('unit-data');
+  const unitData: Array<{id:string;name:string;icon:string;units:Array<{id:string;name:string;symbol:string;factor:number}>}> =
+    raw ? JSON.parse(raw.textContent ?? '[]') : [];
+
+  const catSel     = document.getElementById('compare-category') as HTMLSelectElement;
+  const valInput   = document.getElementById('compare-value') as HTMLInputElement;
+  const baseSel    = document.getElementById('compare-base-unit') as HTMLSelectElement;
+  const cbxWrap    = document.getElementById('compare-unit-checkboxes') as HTMLElement;
+  const resultsEl  = document.getElementById('compare-results') as HTMLElement;
+
+  // Temperature conversion helper
+  function convertValue(value: number, fromId: string, toId: string, catId: string, units: typeof unitData[0]['units']): number {
+    if (fromId === toId) return value;
+    if (catId === 'temperature') {
+      let celsius: number;
+      switch (fromId) {
+        case 'c': celsius = value; break;
+        case 'f': celsius = (value - 32) * 5 / 9; break;
+        case 'k': celsius = value - 273.15; break;
+        default:  celsius = value;
+      }
+      switch (toId) {
+        case 'c': return celsius;
+        case 'f': return celsius * 9 / 5 + 32;
+        case 'k': return celsius + 273.15;
+        default:  return celsius;
+      }
+    }
+    const fromU = units.find(u => u.id === fromId);
+    const toU   = units.find(u => u.id === toId);
+    if (!fromU || !toU || toU.factor === 0) return NaN;
+    return (value * fromU.factor) / toU.factor;
+  }
+
+  function fmt(v: number): string {
+    if (!isFinite(v)) return '—';
+    if (v === 0) return '0';
+    const abs = Math.abs(v);
+    if (abs >= 1e12 || (abs < 1e-8 && abs > 0)) return v.toExponential(4);
+    const decimals = abs >= 1000 ? 2 : abs >= 1 ? 4 : 6;
+    return v.toFixed(decimals).replace(/\.?0+$/, '');
+  }
+
+  function render() {
+    const catId  = catSel.value;
+    const cat    = unitData.find(c => c.id === catId);
+    if (!cat) return;
+
+    const value  = parseFloat(valInput.value);
+    const baseId = baseSel.value;
+    if (isNaN(value) || !baseId) return;
+
+    const checked = [...cbxWrap.querySelectorAll<HTMLInputElement>('input[type=checkbox]:checked')]
+      .map(cb => cb.value);
+
+    if (checked.length < 1) {
+      resultsEl.innerHTML = '<p class="compare-empty">Select at least one unit to compare.</p>';
+      return;
+    }
+
+    // Convert value to each unit
+    const results = checked.map(uid => {
+      const u = cat.units.find(u => u.id === uid);
+      if (!u) return null;
+      const converted = convertValue(value, baseId, uid, catId, cat.units);
+      return { unit: u, converted };
+    }).filter(Boolean) as Array<{unit:{id:string;name:string;symbol:string;factor:number};converted:number}>;
+
+    if (results.length === 0) {
+      resultsEl.innerHTML = '<p class="compare-empty">No valid conversions.</p>';
+      return;
+    }
+
+    // Find max converted value for bar widths (use absolute values)
+    const maxVal = Math.max(...results.map(r => Math.abs(r.converted)).filter(isFinite));
+
+    resultsEl.innerHTML = `
+      <table class="compare-table">
+        <caption>Comparing ${fmt(value)} ${cat.units.find(u => u.id === baseId)?.symbol ?? baseId}</caption>
+        <thead><tr><th>Unit</th><th>Value</th><th>Relative size</th></tr></thead>
+        <tbody>
+          ${results.map(r => {
+            const pct = maxVal > 0 && isFinite(r.converted) ? (Math.abs(r.converted) / maxVal * 100).toFixed(1) : 0;
+            return `
+              <tr>
+                <td class="cmp-unit">
+                  <span class="cmp-sym">${r.unit.symbol}</span>
+                  <span class="cmp-name">${r.unit.name}</span>
+                </td>
+                <td class="cmp-val">${fmt(r.converted)}</td>
+                <td class="cmp-bar-cell">
+                  <div class="cmp-bar-track">
+                    <div class="cmp-bar" style="width:${pct}%"></div>
+                  </div>
+                  <span class="cmp-pct">${pct}%</span>
+                </td>
+              </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function populateUnits() {
+    const catId = catSel.value;
+    const cat = unitData.find(c => c.id === catId);
+    if (!cat) return;
+
+    baseSel.innerHTML = cat.units.map(u => `<option value="${u.id}">${u.symbol} — ${u.name}</option>`).join('');
+    cbxWrap.innerHTML = cat.units.map(u =>
+      `<label class="unit-cbx-label">
+        <input type="checkbox" value="${u.id}" checked />
+        <span>${u.symbol}</span> <span class="cbx-name">${u.name}</span>
+      </label>`
+    ).join('');
+    cbxWrap.querySelectorAll('input').forEach(cb => cb.addEventListener('change', render));
+    render();
+  }
+
+  catSel.addEventListener('change', populateUnits);
+  valInput.addEventListener('input', render);
+  baseSel.addEventListener('change', render);
+
+  // Restore from URL params
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('cat')) catSel.value = params.get('cat')!;
+  if (params.get('value')) valInput.value = params.get('value')!;
+  populateUnits();
+  if (params.get('base')) baseSel.value = params.get('base')!;
+  if (params.get('units')) {
+    const selectedUnits = params.get('units')!.split(',');
+    cbxWrap.querySelectorAll<HTMLInputElement>('input[type=checkbox]').forEach(cb => {
+      cb.checked = selectedUnits.includes(cb.value);
+    });
+    render();
+  }
+</script>
+
+<style>
+  .compare-hero { text-align: center; margin-bottom: var(--sp-2xl); }
+  .compare-hero h1 {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: var(--sp-sm);
+  }
+  .compare-lead { font-size: 1.05rem; color: var(--color-ink-2); }
+
+  .compare-controls {
+    padding: var(--sp-xl);
+    margin-bottom: var(--sp-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-lg);
+  }
+  .compare-row { display: flex; align-items: flex-start; gap: var(--sp-lg); }
+  .compare-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-ink-mute);
+    min-width: 110px;
+    padding-top: 10px;
+    flex-shrink: 0;
+  }
+  .compare-cat-select { max-width: 280px; }
+
+  .unit-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-sm);
+    flex: 1;
+  }
+  .unit-cbx-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-pill);
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.12s, background 0.12s;
+  }
+  .unit-cbx-label:has(input:checked) {
+    border-color: var(--color-primary);
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+  }
+  .unit-cbx-label input { display: none; }
+  .cbx-name { color: var(--color-ink-mute); font-size: 11px; }
+
+  .compare-results { margin-top: var(--sp-xl); }
+  .compare-empty { color: var(--color-ink-mute); font-size: 14px; text-align: center; padding: var(--sp-2xl) 0; }
+
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .compare-table caption {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-ink-mute);
+    margin-bottom: var(--sp-md);
+    caption-side: top;
+    padding-bottom: var(--sp-sm);
+  }
+  .compare-table th {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-ink-mute);
+    text-align: left;
+    padding: var(--sp-sm) var(--sp-md);
+    border-bottom: 2px solid var(--color-hairline);
+  }
+  .compare-table td {
+    padding: var(--sp-md);
+    border-bottom: 1px solid var(--color-hairline);
+    vertical-align: middle;
+  }
+  .cmp-unit { display: flex; align-items: center; gap: var(--sp-sm); }
+  .cmp-sym  { font-weight: 700; color: var(--color-primary); min-width: 36px; font-feature-settings: "tnum"; }
+  .cmp-name { font-size: 12px; color: var(--color-ink-2); }
+  .cmp-val  { font-weight: 600; font-feature-settings: "tnum"; min-width: 100px; }
+  .cmp-bar-cell { display: flex; align-items: center; gap: var(--sp-sm); }
+  .cmp-bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--color-canvas-soft);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 60px;
+  }
+  .cmp-bar {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    min-width: 2px;
+  }
+  .cmp-pct { font-size: 11px; color: var(--color-ink-mute); min-width: 36px; text-align: right; }
+
+  @media (max-width: 600px) {
+    .compare-row { flex-direction: column; gap: var(--sp-sm); }
+    .compare-label { min-width: auto; padding-top: 0; }
+  }
+</style>

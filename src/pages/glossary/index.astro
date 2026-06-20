@@ -1,0 +1,178 @@
+---
+import Layout from '../../components/Layout.astro';
+import { categories } from '../../lib/units';
+
+const siteUrl = 'https://prounitconverter.com';
+
+// Collect all unique units with their category info
+const allUnits = categories.flatMap(cat =>
+  cat.units.map(u => ({ ...u, catId: cat.id, catName: cat.name, catIcon: cat.icon }))
+);
+
+// Sort alphabetically by name
+const sorted = [...allUnits].sort((a, b) => a.name.localeCompare(b.name));
+
+// Group by first letter
+const grouped: Record<string, typeof sorted> = {};
+for (const u of sorted) {
+  const letter = u.name[0].toUpperCase();
+  if (!grouped[letter]) grouped[letter] = [];
+  grouped[letter].push(u);
+}
+const letters = Object.keys(grouped).sort();
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home',     item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Glossary', item: `${siteUrl}/glossary` },
+    ],
+  },
+];
+---
+
+<Layout
+  title="Unit Glossary — Definitions for Every Measurement Unit"
+  description="Browse definitions for every unit of measurement we support — length, weight, temperature, area, volume, speed, digital, time, currency, angle, pressure, energy, power, force, voltage, cooking, and number base."
+  canonical={`${siteUrl}/glossary`}
+  keywords="unit definitions, measurement glossary, what is a meter, what is a kilogram, unit symbols, SI units"
+  schemas={schemas}
+>
+  <div class="container" style="padding-top:var(--sp-2xl);padding-bottom:var(--sp-2xl)">
+    <header class="glossary-hero">
+      <h1>Unit Glossary</h1>
+      <p class="glossary-lead">
+        Definitions, symbols, and descriptions for all {allUnits.length} measurement units we support.
+      </p>
+      <!-- Letter jump nav -->
+      <nav class="letter-nav" aria-label="Jump to letter">
+        {letters.map(l => <a href={`#letter-${l}`} class="letter-pill">{l}</a>)}
+      </nav>
+    </header>
+
+    {letters.map(letter => (
+      <section id={`letter-${letter}`} class="glossary-group">
+        <h2 class="glossary-letter">{letter}</h2>
+        <ul class="glossary-list">
+          {grouped[letter].map(u => (
+            <li class="glossary-item">
+              <a href={`/glossary/${u.id}`} class="glossary-link">
+                <span class="g-symbol">{u.symbol}</span>
+                <span class="g-name">{u.name}</span>
+                <span class="g-cat">{u.catIcon} {u.catName}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</Layout>
+
+<style>
+  .glossary-hero {
+    margin-bottom: var(--sp-2xl);
+    text-align: center;
+  }
+  .glossary-hero h1 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: var(--sp-sm);
+  }
+  .glossary-lead {
+    font-size: 1.05rem;
+    color: var(--color-ink-2);
+    margin-bottom: var(--sp-xl);
+  }
+
+  .letter-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+  }
+  .letter-pill {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    line-height: 30px;
+    text-align: center;
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-sm);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-ink-2);
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+  }
+  .letter-pill:hover {
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  .glossary-group { margin-bottom: var(--sp-2xl); }
+  .glossary-letter {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 4px;
+    margin-bottom: var(--sp-md);
+    display: inline-block;
+    min-width: 32px;
+  }
+
+  .glossary-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--sp-sm);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .glossary-link {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    padding: var(--sp-sm) var(--sp-md);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-md);
+    text-decoration: none;
+    transition: border-color 0.12s, background 0.12s;
+    background: var(--color-canvas);
+  }
+  .glossary-link:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-subtle);
+    text-decoration: none;
+  }
+
+  .g-symbol {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-primary);
+    min-width: 28px;
+    font-feature-settings: "tnum";
+  }
+  .g-name {
+    font-size: 13px;
+    color: var(--color-ink);
+    font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .g-cat {
+    font-size: 11px;
+    color: var(--color-ink-mute);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+</style>

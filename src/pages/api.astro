@@ -1,0 +1,399 @@
+---
+import Layout from '../components/Layout.astro';
+import { categories } from '../lib/units';
+
+const siteUrl = 'https://prounitconverter.com';
+const pageUrl = `${siteUrl}/api`;
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Developer API',     item: pageUrl },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Unit Converter Developer API',
+    url: pageUrl,
+    description: 'Free JSON API for unit conversions. Convert length, weight, temperature, volume, speed, and more programmatically.',
+  },
+];
+
+const categoryList = categories.map(c => ({
+  id: c.id,
+  name: c.name,
+  units: c.units.map(u => u.id),
+}));
+---
+
+<Layout
+  title="Unit Converter API — Free JSON Conversion API"
+  description="Free developer API for unit conversions. Convert length, weight, temperature, currency and more via a simple JSON endpoint. No authentication required."
+  canonical={pageUrl}
+  schemas={schemas}
+>
+  <nav aria-label="Breadcrumb" class="breadcrumb-bar">
+    <div class="container">
+      <ol class="breadcrumb-list">
+        <li><a href="/">Home</a></li>
+        <li class="breadcrumb-sep">›</li>
+        <li>Developer API</li>
+      </ol>
+    </div>
+  </nav>
+
+  <section class="api-hero section">
+    <div class="container content-narrow">
+      <h1 class="display-lg">Developer API</h1>
+      <p class="body-lg" style="color: var(--color-ink-2); margin-top: var(--sp-lg);">
+        A free, no-auth JSON API for unit conversions. Use it in your apps, scripts, or workflows.
+        All conversions run client-side — this documents the JavaScript module you can import directly.
+      </p>
+
+      <div class="api-notice">
+        <strong>How it works:</strong> Instead of a REST API (which would require a server), we publish our
+        conversion library as an open-source JavaScript module. Import it in any JS/TS project for
+        zero-latency conversions with no rate limits, no auth, and no network requests.
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick usage -->
+  <section class="section-sm">
+    <div class="container content-narrow">
+      <h2>Quick Start</h2>
+      <p style="color: var(--color-ink-2); margin: var(--sp-lg) 0;">Import our conversion library from CDN (ESM-compatible):</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">JavaScript / TypeScript</span>
+          <button class="copy-code-btn" data-target="snippet-import">Copy</button>
+        </div>
+        <pre id="snippet-import"><code>{`// Import the conversion library
+import { categories, convert, categoryMap } from 'https://prounitconverter.com/lib/units.js';
+
+// Convert 5 kilometers to miles
+const km     = categoryMap.get('length').units.find(u => u.id === 'km');
+const mi     = categoryMap.get('length').units.find(u => u.id === 'mi');
+const result = convert(5, km, mi, 'length');
+console.log(result); // → 3.10686`}</code></pre>
+      </div>
+
+      <h2 style="margin-top: var(--sp-xxl);">Embed via iframe</h2>
+      <p style="color: var(--color-ink-2); margin: var(--sp-lg) 0;">
+        Add any converter to your website with a single <code>&lt;iframe&gt;</code>:
+      </p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">HTML</span>
+          <button class="copy-code-btn" data-target="snippet-iframe">Copy</button>
+        </div>
+        <pre id="snippet-iframe"><code>{`<!-- Length converter embed -->
+<iframe
+  src="https://prounitconverter.com/embed/length"
+  width="100%"
+  height="320"
+  frameborder="0"
+  title="Length Converter"
+  loading="lazy"
+></iframe>
+
+<!-- Dark mode variant -->
+<iframe
+  src="https://prounitconverter.com/embed/length?theme=dark"
+  width="100%"
+  height="320"
+  frameborder="0"
+  title="Length Converter (Dark)"
+></iframe>`}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Available categories -->
+  <section class="section-sm" style="background: var(--color-canvas-soft); border-top: 1px solid var(--color-hairline);">
+    <div class="container content-narrow">
+      <h2>Available Categories & Units</h2>
+      <p style="color: var(--color-ink-2); margin: var(--sp-lg) 0;">
+        Pass the category ID and unit IDs from the table below to the <code>convert()</code> function.
+      </p>
+
+      <div class="table-wrapper" style="margin-top: var(--sp-lg);">
+        <table class="conversion-table" aria-label="Available unit categories">
+          <thead>
+            <tr>
+              <th scope="col">Category ID</th>
+              <th scope="col">Name</th>
+              <th scope="col">Unit IDs</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categoryList.map(cat => (
+              <tr>
+                <td><code>{cat.id}</code></td>
+                <td><a href={`/convert/${cat.id}`}>{cat.name}</a></td>
+                <td class="unit-ids-cell">{cat.units.map(id => <code class="unit-id-tag">{id}</code>)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Function reference -->
+  <section class="section-sm">
+    <div class="container content-narrow">
+      <h2>Function Reference</h2>
+
+      <div class="api-fn">
+        <h3><code>convert(value, fromUnit, toUnit, categoryId)</code></h3>
+        <p>Converts a numeric value between two units in the same category.</p>
+        <table class="api-params-table">
+          <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>value</code></td><td><code>number</code></td><td>The value to convert</td></tr>
+            <tr><td><code>fromUnit</code></td><td><code>Unit</code></td><td>Source unit object</td></tr>
+            <tr><td><code>toUnit</code></td><td><code>Unit</code></td><td>Target unit object</td></tr>
+            <tr><td><code>categoryId</code></td><td><code>string</code></td><td>Category ID (e.g. <code>'length'</code>)</td></tr>
+          </tbody>
+        </table>
+        <p><strong>Returns:</strong> <code>number</code> — the converted value.</p>
+      </div>
+
+      <div class="api-fn">
+        <h3><code>getFormula(value, fromUnit, toUnit, categoryId, result)</code></h3>
+        <p>Returns a human-readable formula string for the conversion.</p>
+        <p><strong>Returns:</strong> <code>string</code> — e.g. <code>"5 km × 0.621371 = 3.107 mi"</code></p>
+      </div>
+
+      <div class="api-fn">
+        <h3><code>formatResult(value)</code></h3>
+        <p>Formats a number for display, automatically choosing decimal places and handling very large/small values with scientific notation.</p>
+        <p><strong>Returns:</strong> <code>string</code></p>
+      </div>
+
+      <div class="api-fn">
+        <h3><code>categoryMap</code></h3>
+        <p>A <code>Map&lt;string, Category&gt;</code> for O(1) category lookup by ID.</p>
+        <div class="code-block" style="margin-top: var(--sp-md);">
+          <pre><code>{`const lengthCat = categoryMap.get('length');
+const meter = lengthCat.units.find(u => u.id === 'm');
+console.log(meter.symbol); // "m"`}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" style="background: var(--color-canvas-soft); border-top: 1px solid var(--color-hairline);">
+    <div class="container content-narrow">
+      <h2>API FAQ</h2>
+      <div class="faq-list" style="margin-top: var(--sp-xxl);">
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="api-faq-1">
+            Is there a rate limit?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <div class="faq-answer" id="api-faq-1" role="region">
+            <p>No rate limits — the library runs in the browser or Node.js with no network requests. Currency conversion requires a fetch to the exchange-rate API (free tier: 1,500 req/month).</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="api-faq-2">
+            Can I use this in a Node.js backend?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <div class="faq-answer" id="api-faq-2" role="region">
+            <p>Yes — the library is pure ESM TypeScript with no browser APIs. Import it directly in Node 18+ or any modern bundler (Vite, Webpack, esbuild).</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="api-faq-3">
+            How do I embed the converter on my site?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <div class="faq-answer" id="api-faq-3" role="region">
+            <p>Use the iframe embed code above. Any category ID works: <code>/embed/length</code>, <code>/embed/currency</code>, etc. Add <code>?theme=dark</code> for dark mode.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .content-narrow { max-width: 760px; }
+
+  .api-hero { padding-top: var(--sp-huge); }
+
+  .api-notice {
+    margin-top: var(--sp-xl);
+    padding: var(--sp-lg) var(--sp-xl);
+    background: var(--color-primary-subtle);
+    border-left: 3px solid var(--color-primary);
+    border-radius: 0 var(--rounded-md) var(--rounded-md) 0;
+    font-size: 14px;
+    color: var(--color-ink-2);
+    line-height: 1.6;
+  }
+
+  h2 { font-size: 22px; font-weight: 400; letter-spacing: -0.2px; margin-bottom: var(--sp-lg); }
+  h2 + p { margin-top: 0; }
+
+  .code-block {
+    background: var(--color-ink);
+    border-radius: var(--rounded-lg);
+    overflow: hidden;
+    margin-top: var(--sp-lg);
+  }
+
+  [data-theme="dark"] .code-block {
+    background: #161b22;
+    border: 1px solid var(--color-hairline);
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-sm) var(--sp-lg);
+    background: rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .code-lang {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .copy-code-btn {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    background: none;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: var(--rounded-sm);
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .copy-code-btn:hover { color: white; border-color: rgba(255,255,255,0.5); }
+
+  pre {
+    padding: var(--sp-xl);
+    overflow-x: auto;
+    margin: 0;
+  }
+
+  pre code {
+    font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #e6edf3;
+    background: none;
+    padding: 0;
+  }
+
+  code {
+    font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+    font-size: 13px;
+    background: var(--color-canvas-soft);
+    border: 1px solid var(--color-hairline);
+    padding: 1px 5px;
+    border-radius: var(--rounded-xs);
+    color: var(--color-primary);
+  }
+
+  .code-block code { background: none; border: none; padding: 0; }
+
+  .unit-ids-cell { font-size: 12px; line-height: 2; }
+  .unit-id-tag {
+    display: inline-block;
+    margin: 1px 2px;
+    font-size: 11px;
+    padding: 1px 5px;
+  }
+
+  .api-fn {
+    margin-top: var(--sp-xxl);
+    padding-top: var(--sp-lg);
+    border-top: 1px solid var(--color-hairline);
+  }
+
+  .api-fn:first-of-type { border-top: none; margin-top: var(--sp-lg); }
+
+  .api-fn h3 {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: var(--sp-sm);
+  }
+
+  .api-fn p {
+    font-size: 14px;
+    color: var(--color-ink-2);
+    margin-bottom: var(--sp-sm);
+    line-height: 1.6;
+  }
+
+  .api-params-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: var(--sp-md) 0;
+  }
+  .api-params-table th {
+    text-align: left;
+    padding: var(--sp-xs) var(--sp-sm);
+    background: var(--color-canvas-soft);
+    border-bottom: 1px solid var(--color-hairline);
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-ink-mute);
+  }
+  .api-params-table td {
+    padding: var(--sp-xs) var(--sp-sm);
+    border-bottom: 1px solid var(--color-hairline);
+    color: var(--color-ink-2);
+    vertical-align: top;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.copy-code-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.dataset.target!;
+      const pre = document.getElementById(targetId);
+      if (pre) {
+        navigator.clipboard.writeText(pre.textContent?.trim() ?? '').then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+        });
+      }
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item')!;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(el => {
+        el.classList.remove('open');
+        el.querySelector('.faq-question')?.setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+</script>

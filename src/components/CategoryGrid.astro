@@ -1,0 +1,21 @@
+---
+import { categories } from '../lib/units';
+---
+
+<div class="category-grid">
+  {categories.map(cat => (
+    <a href={`/convert/${cat.id}`} class="category-card" aria-label={`${cat.name} Converter`}>
+      <div class="category-card-icon" aria-hidden="true">{cat.icon}</div>
+      <div class="category-card-name">{cat.name} Converter</div>
+      <div class="category-card-hints">
+        {cat.commonPairs.slice(0, 3).map(([from, to]) => {
+          const fromUnit = cat.units.find(u => u.id === from);
+          const toUnit = cat.units.find(u => u.id === to);
+          return fromUnit && toUnit
+            ? `${fromUnit.name} → ${toUnit.name}`
+            : null;
+        }).filter(Boolean).join(' · ')}
+      </div>
+    </a>
+  ))}
+</div>

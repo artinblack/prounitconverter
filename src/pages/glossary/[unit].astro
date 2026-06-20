@@ -1,0 +1,265 @@
+---
+import Layout from '../../components/Layout.astro';
+import ConversionTable from '../../components/ConversionTable.astro';
+import { categories, convert, formatResult } from '../../lib/units';
+
+export async function getStaticPaths() {
+  const paths = [];
+  const seen = new Set<string>();
+  for (const cat of categories) {
+    for (const u of cat.units) {
+      if (seen.has(u.id)) continue;
+      seen.add(u.id);
+      paths.push({ params: { unit: u.id }, props: { unit: u, category: cat } });
+    }
+  }
+  return paths;
+}
+
+const { unit, category } = Astro.props;
+const siteUrl = 'https://prounitconverter.com';
+const pageUrl = `${siteUrl}/glossary/${unit.id}`;
+
+// Other units in same category (for quick conversions strip)
+const otherUnits = category.units.filter(u => u.id !== unit.id).slice(0, 6);
+
+// Build 1-unit conversion examples
+const examples = otherUnits.map(toU => {
+  const result = category.id !== 'temperature' && category.id !== 'fuel' && category.id !== 'currency' && category.id !== 'numbase'
+    ? formatResult(convert(1, unit, toU, category.id))
+    : null;
+  return { toU, result };
+});
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home',     item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Glossary', item: `${siteUrl}/glossary` },
+      { '@type': 'ListItem', position: 3, name: unit.name,  item: pageUrl },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'DefinedTerm',
+    name: unit.name,
+    termCode: unit.symbol,
+    description: unit.info ?? `${unit.name} (${unit.symbol}) — a unit of ${category.name.toLowerCase()}.`,
+    inDefinedTermSet: {
+      '@type': 'DefinedTermSet',
+      name: `${category.name} Units`,
+      url: `${siteUrl}/convert/${category.id}`,
+    },
+  },
+];
+---
+
+<Layout
+  title={`What is a ${unit.name} (${unit.symbol})? — Unit Glossary`}
+  description={unit.info ?? `Definition of ${unit.name} (${unit.symbol}), a unit of ${category.name.toLowerCase()}. Learn its history, symbol, and how to convert it.`}
+  canonical={pageUrl}
+  keywords={`${unit.name}, ${unit.symbol}, ${unit.name.toLowerCase()} definition, ${unit.name.toLowerCase()} unit, ${category.name.toLowerCase()} unit`}
+  schemas={schemas}
+>
+  <div class="container" style="padding-top:var(--sp-2xl);padding-bottom:var(--sp-2xl);max-width:800px">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li><a href="/glossary">Glossary</a></li>
+        <li aria-current="page">{unit.name}</li>
+      </ol>
+    </nav>
+
+    <!-- Hero -->
+    <header class="unit-hero">
+      <div class="unit-badge">{category.icon} {category.name}</div>
+      <h1>What is a {unit.name}?</h1>
+      <div class="unit-symbol-row">
+        <span class="unit-symbol-chip">{unit.symbol}</span>
+        <span class="unit-id-chip">ID: <code>{unit.id}</code></span>
+      </div>
+      {unit.info && <p class="unit-info-text">{unit.info}</p>}
+    </header>
+
+    <!-- Quick conversions -->
+    {examples.filter(e => e.result !== null).length > 0 && (
+      <section class="unit-conversions">
+        <h2>1 {unit.name} equals…</h2>
+        <ul class="quick-conv-list">
+          {examples.filter(e => e.result !== null).map(({ toU, result }) => (
+            <li>
+              <a href={`/convert/${unit.id}-to-${toU.id}`} class="quick-conv-item">
+                <span class="qc-result">{result}</span>
+                <span class="qc-unit">{toU.symbol}</span>
+                <span class="qc-name">{toU.name}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <!-- Full category conversion table -->
+    {category.id !== 'currency' && category.id !== 'numbase' && category.id !== 'temperature' && (
+      <section class="unit-table">
+        <h2>{unit.name} Conversion Table</h2>
+        <ConversionTable category={category} fromUnitId={unit.id} inputValue={1} />
+      </section>
+    )}
+
+    <!-- Category link -->
+    <section class="unit-category-link">
+      <h2>More {category.name} Conversions</h2>
+      <p>Use the full <a href={`/convert/${category.id}`}>{category.name} Converter</a> to convert between all {category.units.length} {category.name.toLowerCase()} units.</p>
+      <a href={`/convert/${category.id}`} class="btn btn-primary" style="display:inline-flex;margin-top:var(--sp-md)">
+        Open {category.name} Converter →
+      </a>
+    </section>
+
+    <!-- Other units in category -->
+    <section class="unit-related">
+      <h2>Other {category.name} Units</h2>
+      <div class="related-units-grid">
+        {category.units.filter(u => u.id !== unit.id).map(u => (
+          <a href={`/glossary/${u.id}`} class="related-unit-card">
+            <span class="ru-symbol">{u.symbol}</span>
+            <span class="ru-name">{u.name}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .breadcrumb ol {
+    display: flex;
+    gap: var(--sp-xs);
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--sp-xl);
+    font-size: 13px;
+    color: var(--color-ink-mute);
+    flex-wrap: wrap;
+  }
+  .breadcrumb li + li::before { content: '/'; margin-right: var(--sp-xs); }
+  .breadcrumb a { color: var(--color-ink-mute); }
+  .breadcrumb a:hover { color: var(--color-primary); }
+
+  .unit-hero { margin-bottom: var(--sp-2xl); }
+  .unit-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-primary);
+    background: var(--color-primary-subtle);
+    border-radius: var(--rounded-pill);
+    padding: 3px 10px;
+    margin-bottom: var(--sp-md);
+  }
+  .unit-hero h1 {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: var(--sp-md);
+  }
+  .unit-symbol-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    margin-bottom: var(--sp-md);
+    flex-wrap: wrap;
+  }
+  .unit-symbol-chip {
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: var(--color-primary);
+    color: white;
+    border-radius: var(--rounded-sm);
+    padding: 3px 12px;
+  }
+  .unit-id-chip {
+    font-size: 12px;
+    color: var(--color-ink-mute);
+    background: var(--color-canvas-soft);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-sm);
+    padding: 3px 10px;
+  }
+  .unit-info-text {
+    font-size: 1.05rem;
+    color: var(--color-ink-2);
+    line-height: 1.6;
+  }
+
+  .unit-conversions, .unit-table, .unit-category-link, .unit-related {
+    margin-bottom: var(--sp-2xl);
+  }
+  .unit-conversions h2, .unit-table h2, .unit-category-link h2, .unit-related h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: var(--sp-lg);
+  }
+
+  .quick-conv-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--sp-sm);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .quick-conv-item {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    padding: var(--sp-md);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-md);
+    text-decoration: none;
+    background: var(--color-canvas);
+    transition: border-color 0.12s, background 0.12s;
+  }
+  .quick-conv-item:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-subtle);
+    text-decoration: none;
+  }
+  .qc-result { font-size: 1rem; font-weight: 700; color: var(--color-ink); font-feature-settings: "tnum"; }
+  .qc-unit   { font-size: 13px; font-weight: 600; color: var(--color-primary); }
+  .qc-name   { font-size: 11px; color: var(--color-ink-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .related-units-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: var(--sp-sm);
+  }
+  .related-unit-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: var(--sp-md);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-md);
+    text-decoration: none;
+    background: var(--color-canvas);
+    text-align: center;
+    transition: border-color 0.12s, background 0.12s;
+  }
+  .related-unit-card:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-subtle);
+    text-decoration: none;
+  }
+  .ru-symbol { font-size: 1rem; font-weight: 700; color: var(--color-primary); }
+  .ru-name   { font-size: 12px; color: var(--color-ink-2); }
+</style>

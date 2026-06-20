@@ -1,0 +1,335 @@
+---
+import { categories } from '../lib/units';
+
+interface Props {
+  activeCategoryId?: string;
+}
+const { activeCategoryId } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <div class="header-top">
+    <div class="container">
+      <nav class="header-nav" aria-label="Main navigation">
+        <a href="/" class="logo" aria-label="Unit Converter Home">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="logo-icon">
+            <rect width="32" height="32" rx="8" fill="#5956f9"/>
+            <path d="M8 11.5H20.5M17.5 8.5L21 11.5L17.5 14.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M24 20.5H11.5M14.5 17.5L11 20.5L14.5 23.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="logo-text">Unit Converter</span>
+        </a>
+
+        <!-- Quick conversion search -->
+        <form
+          class="header-search"
+          action="#"
+          aria-label="Quick unit conversion"
+          data-units={JSON.stringify(
+            categories.flatMap(cat =>
+              cat.units.map(u => ({
+                id: u.id, sym: u.symbol.toLowerCase(), name: u.name.toLowerCase(), cat: cat.id,
+                pairs: cat.commonPairs.map(([f, t]) => `${f}-to-${t}`),
+              }))
+            )
+          )}
+        >
+          <input
+            type="search"
+            class="header-search-input"
+            placeholder="e.g. 100 km to miles"
+            aria-label="Quick unit conversion search"
+            autocomplete="off"
+            spellcheck={false}
+          />
+          <button type="submit" class="header-search-btn" aria-label="Convert">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+        </form>
+
+        <div class="header-actions">
+          <nav class="header-pages" aria-label="Site pages">
+            <a href="/about" class={`header-page-link ${currentPath === '/about' ? 'active' : ''}`}>About</a>
+            <a href="/contact" class={`header-page-link ${currentPath === '/contact' ? 'active' : ''}`}>Contact</a>
+          </nav>
+
+          <span class="header-divider" aria-hidden="true"></span>
+
+          <button
+            id="theme-toggle"
+            class="btn-icon"
+            aria-label="Toggle dark mode"
+            aria-pressed="false"
+            title="Toggle dark mode"
+          >
+            <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
+
+  <div class="header-cats">
+    <div class="container">
+      <nav class="nav-categories" aria-label="Unit categories">
+        {categories.map(cat => (
+          <a
+            href={`/convert/${cat.id}`}
+            class={`nav-cat-pill ${activeCategoryId === cat.id ? 'active' : ''}`}
+            aria-current={activeCategoryId === cat.id ? 'page' : undefined}
+          >
+            <span aria-hidden="true">{cat.icon}</span>
+            {cat.name}
+          </a>
+        ))}
+      </nav>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--color-canvas);
+    border-bottom: 1px solid var(--color-hairline);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .header-top {
+    padding: 12px 0;
+  }
+
+  .header-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-lg);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    text-decoration: none;
+    color: var(--color-ink);
+    flex-shrink: 0;
+  }
+  .logo:hover { text-decoration: none; }
+
+  .logo-icon {
+    display: block;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: var(--color-ink);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  /* Thin vertical divider between links and dark-mode button */
+  .header-divider {
+    display: block;
+    width: 1px;
+    height: 18px;
+    background: var(--color-hairline);
+    margin: 0 6px;
+    flex-shrink: 0;
+  }
+
+  /* Secondary page links (About, Contact) — grouped inside header-actions */
+  .header-pages {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  @media (max-width: 520px) {
+    .header-pages { display: none; }
+    .header-divider { display: none; }
+  }
+
+  .header-page-link {
+    padding: 5px 11px;
+    border-radius: var(--rounded-pill);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-ink-mute);
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+
+  .header-page-link:hover {
+    background: var(--color-canvas-soft);
+    color: var(--color-ink);
+    border-color: var(--color-hairline);
+    text-decoration: none;
+  }
+
+  .header-page-link.active {
+    color: var(--color-primary);
+    background: var(--color-primary-subtle);
+  }
+
+  [data-theme="dark"] .header-page-link.active {
+    background: rgba(89, 86, 249, 0.18);
+    color: var(--color-primary-soft);
+  }
+
+  .header-cats {
+    border-top: 1px solid var(--color-hairline);
+    padding: 8px 0;
+  }
+
+  /* Quick search */
+  .header-search {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 340px;
+    min-width: 0;
+    background: var(--color-canvas-soft);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-pill);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    overflow: hidden;
+  }
+  .header-search:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-subtle);
+    background: var(--color-canvas);
+  }
+  .header-search-input {
+    flex: 1;
+    padding: 6px 12px;
+    background: none;
+    border: none;
+    font-size: 13px;
+    color: var(--color-ink);
+    outline: none;
+    min-width: 0;
+  }
+  .header-search-input::placeholder { color: var(--color-ink-mute); }
+  .header-search-input::-webkit-search-cancel-button { display: none; }
+  .header-search-btn {
+    padding: 6px 10px;
+    background: none;
+    border: none;
+    color: var(--color-ink-mute);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .header-search-btn:hover { color: var(--color-primary); }
+  @media (max-width: 680px) {
+    .header-search { max-width: 180px; }
+  }
+  @media (max-width: 480px) {
+    .header-search { display: none; }
+  }
+</style>
+
+<script>
+  // Dark mode toggle — runs before paint via inline script in Layout, this handles button state
+  const toggle = document.getElementById('theme-toggle');
+  const sun = toggle?.querySelector('.icon-sun') as HTMLElement | null;
+  const moon = toggle?.querySelector('.icon-moon') as HTMLElement | null;
+
+  function syncThemeIcon() {
+    const dark = document.documentElement.dataset.theme === 'dark';
+    if (toggle) toggle.setAttribute('aria-pressed', String(dark));
+    if (sun)  sun.style.display  = dark ? 'none'  : '';
+    if (moon) moon.style.display = dark ? ''      : 'none';
+  }
+
+  syncThemeIcon();
+
+  toggle?.addEventListener('click', () => {
+    const isDark = document.documentElement.dataset.theme === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem('uc_theme', next);
+    syncThemeIcon();
+  });
+
+  // ── Quick conversion search ────────────────────────────────
+  const searchForm = document.querySelector<HTMLFormElement>('.header-search');
+  if (searchForm) {
+    const unitsData: Array<{id:string;sym:string;name:string;cat:string;pairs:string[]}> =
+      JSON.parse(searchForm.dataset.units ?? '[]');
+
+    function matchUnit(token: string): {id:string;cat:string;pairs:string[]} | null {
+      const t = token.toLowerCase().trim();
+      return unitsData.find(u => u.id === t || u.sym === t || u.name === t || u.name.startsWith(t)) ?? null;
+    }
+
+    function buildURL(fromId: string, toId: string, fromCat: string, pairs: string[], value?: string): string {
+      const pairKey = `${fromId}-to-${toId}`;
+      const hasPairPage = pairs.includes(pairKey);
+      const base = hasPairPage
+        ? `/convert/${pairKey}`
+        : `/convert/${fromCat}`;
+      const params = new URLSearchParams({ from: fromId, to: toId });
+      if (value) params.set('value', value);
+      return `${base}?${params.toString()}`;
+    }
+
+    searchForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const raw = (searchForm.querySelector<HTMLInputElement>('.header-search-input')?.value ?? '').trim();
+      if (!raw) return;
+
+      // Pattern: {number} {unit} to {unit}
+      const m1 = raw.match(/^([\d.,]+)\s+(.+?)\s+(?:to|in)\s+(.+)$/i);
+      if (m1) {
+        const [, val, fromTok, toTok] = m1;
+        const fromU = matchUnit(fromTok);
+        const toU   = matchUnit(toTok);
+        if (fromU && toU) {
+          window.location.href = buildURL(fromU.id, toU.id, fromU.cat, fromU.pairs, val.replace(',', '.'));
+          return;
+        }
+      }
+
+      // Pattern: {unit} to {unit}
+      const m2 = raw.match(/^(.+?)\s+(?:to|in)\s+(.+)$/i);
+      if (m2) {
+        const [, fromTok, toTok] = m2;
+        const fromU = matchUnit(fromTok);
+        const toU   = matchUnit(toTok);
+        if (fromU && toU) {
+          window.location.href = buildURL(fromU.id, toU.id, fromU.cat, fromU.pairs);
+          return;
+        }
+      }
+
+      // Fallback: search category name
+      const catMatch = unitsData.find(u => u.cat.includes(raw.toLowerCase()) || u.name.includes(raw.toLowerCase()));
+      if (catMatch) {
+        window.location.href = `/convert/${catMatch.cat}`;
+        return;
+      }
+    });
+  }
+</script>

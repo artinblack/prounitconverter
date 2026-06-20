@@ -1,0 +1,295 @@
+---
+import Layout from '../components/Layout.astro';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  name: 'Contact Unit Converter',
+  url: 'https://prounitconverter.com/contact',
+  description:
+    'Get in touch with the Unit Converter team for bug reports, feature requests, accuracy issues, or general enquiries.',
+};
+---
+
+<Layout
+  title="Contact Us — Unit Converter"
+  description="Get in touch with the Unit Converter team. Report a bug, suggest a feature, or send a general enquiry. We aim to respond within 48 hours."
+  canonical="https://prounitconverter.com/contact"
+  schemas={[schema]}
+>
+  <div class="container page-container" style="max-width: 900px">
+    <header class="page-header">
+      <h1 class="page-title">Contact Us</h1>
+      <p class="page-subtitle">Questions, bug reports, or feature ideas — we'd love to hear from you.</p>
+    </header>
+
+    <div class="contact-layout">
+      <!-- Contact form -->
+      <div class="contact-form-wrap">
+        <form
+          id="contact-form"
+          class="contact-form"
+          action="https://formsubmit.co/YOUR_EMAIL@example.com"
+          method="POST"
+        >
+          <!-- Replace YOUR_EMAIL@example.com above with your real email to activate FormSubmit -->
+          <input type="hidden" name="_subject" value="Unit Converter — Contact Form" />
+          <input type="hidden" name="_next" value="https://prounitconverter.com/contact?sent=1" />
+          <input type="hidden" name="_captcha" value="false" />
+          <!-- Honeypot anti-spam -->
+          <input type="text" name="_honey" style="display:none" tabindex="-1" aria-hidden="true" />
+
+          <div class="form-group">
+            <label for="contact-name" class="form-label">Your Name</label>
+            <input
+              type="text"
+              id="contact-name"
+              name="name"
+              class="form-input"
+              placeholder="Jane Smith"
+              autocomplete="name"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="contact-email" class="form-label">Email Address</label>
+            <input
+              type="email"
+              id="contact-email"
+              name="email"
+              class="form-input"
+              placeholder="jane@example.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="contact-subject" class="form-label">Subject</label>
+            <select id="contact-subject" name="subject" class="form-input">
+              <option value="Bug Report">Bug Report</option>
+              <option value="Feature Request">Feature Request</option>
+              <option value="Accuracy Issue">Accuracy Issue</option>
+              <option value="General Enquiry" selected>General Enquiry</option>
+              <option value="Partnership">Partnership / Collaboration</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="contact-message" class="form-label">Message</label>
+            <textarea
+              id="contact-message"
+              name="message"
+              class="form-input form-textarea"
+              placeholder="Describe your question or issue in as much detail as possible..."
+              required
+              rows="6"
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary form-submit">Send Message</button>
+        </form>
+
+        <div id="contact-success" class="contact-success" aria-live="polite">
+          <div class="success-icon" aria-hidden="true">✓</div>
+          <h2>Message Sent!</h2>
+          <p>Thanks for reaching out. We'll get back to you within 48 hours.</p>
+          <a href="/" class="btn-primary">Back to Home</a>
+        </div>
+      </div>
+
+      <!-- Sidebar info -->
+      <aside class="contact-sidebar">
+        <p class="sidebar-heading">Other Ways to Reach Us</p>
+
+        <div class="info-card">
+          <span class="info-icon" aria-hidden="true">📧</span>
+          <div>
+            <div class="info-label">Email</div>
+            <a href="mailto:hello@prounitconverter.com" class="info-link">hello@prounitconverter.com</a>
+            <p class="info-note">We respond within 48 hours on business days.</p>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <span class="info-icon" aria-hidden="true">🐛</span>
+          <div>
+            <div class="info-label">Bug Reports</div>
+            <p class="info-note">Include the converter you were using, the value you entered, and what you expected vs. what you saw.</p>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <span class="info-icon" aria-hidden="true">💡</span>
+          <div>
+            <div class="info-label">Feature Requests</div>
+            <p class="info-note">Suggest a new unit category, a missing unit, or a UI improvement. We read every submission.</p>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <span class="info-icon" aria-hidden="true">🔒</span>
+          <div>
+            <div class="info-label">Privacy Requests</div>
+            <p class="info-note">See our <a href="/privacy">Privacy Policy</a> first, then contact us with your specific request.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .contact-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: var(--sp-huge);
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .contact-layout { grid-template-columns: 1fr; }
+  }
+
+  /* Form */
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-lg);
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-xs);
+  }
+
+  .form-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+
+  .form-input {
+    padding: 10px 14px;
+    border: 1.5px solid var(--color-hairline-input);
+    border-radius: var(--rounded-md);
+    font-family: var(--font-base);
+    font-size: 15px;
+    color: var(--color-ink);
+    background: var(--color-canvas);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    outline: none;
+    width: 100%;
+  }
+
+  .form-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(89, 86, 249, 0.12);
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 140px;
+    line-height: 1.6;
+  }
+
+  .form-submit {
+    align-self: flex-start;
+  }
+
+  /* Success state */
+  .contact-success {
+    display: none;
+    text-align: center;
+    padding: var(--sp-xxl);
+    background: var(--color-canvas-soft);
+    border-radius: var(--rounded-xl);
+    border: 1px solid var(--color-hairline);
+  }
+
+  .success-icon {
+    width: 52px;
+    height: 52px;
+    background: #22c55e;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin: 0 auto var(--sp-lg);
+  }
+
+  .contact-success h2 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-ink);
+    margin-bottom: var(--sp-sm);
+  }
+
+  .contact-success p {
+    font-size: 15px;
+    color: var(--color-ink-mute);
+    margin-bottom: var(--sp-lg);
+  }
+
+  /* Sidebar */
+  .sidebar-heading {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-ink-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: var(--sp-lg);
+  }
+
+  .info-card {
+    display: flex;
+    gap: var(--sp-md);
+    padding: var(--sp-md) var(--sp-lg);
+    border-radius: var(--rounded-lg);
+    margin-bottom: var(--sp-sm);
+    border: 1px solid var(--color-hairline);
+  }
+
+  .info-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    width: 24px;
+    line-height: 1.4;
+  }
+
+  .info-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-ink);
+    margin-bottom: 3px;
+  }
+
+  .info-link {
+    font-size: 13px;
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  .info-link:hover { text-decoration: underline; }
+
+  .info-note {
+    font-size: 12.5px;
+    color: var(--color-ink-mute);
+    line-height: 1.5;
+    margin-top: 3px;
+  }
+
+  .info-note a { color: var(--color-primary); }
+</style>
+
+<script>
+  if (new URLSearchParams(window.location.search).get('sent') === '1') {
+    const form = document.getElementById('contact-form') as HTMLElement | null;
+    const success = document.getElementById('contact-success') as HTMLElement | null;
+    if (form) form.style.display = 'none';
+    if (success) success.style.display = 'block';
+  }
+</script>

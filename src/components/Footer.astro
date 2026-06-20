@@ -1,0 +1,175 @@
+---
+import { categories } from '../lib/units';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="footer-logo" aria-label="Unit Converter Home">
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect width="32" height="32" rx="8" fill="#5956f9"/>
+            <path d="M8 11.5H20.5M17.5 8.5L21 11.5L17.5 14.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M24 20.5H11.5M14.5 17.5L11 20.5L14.5 23.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Unit Converter</span>
+        </a>
+        <p class="footer-tagline">Fast, free, accurate unit conversions for length, weight, temperature, area, volume, speed, digital storage, time, and currency.</p>
+      </div>
+
+      <div class="footer-links">
+        <h3 class="footer-heading">Converters</h3>
+        <ul>
+          {categories.map(cat => (
+            <li><a href={`/convert/${cat.id}`}>{cat.icon} {cat.name} Converter</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="footer-links">
+        <h3 class="footer-heading">Popular Conversions</h3>
+        <ul>
+          <li><a href="/convert/length">Feet to Meters</a></li>
+          <li><a href="/convert/length">Inches to Centimeters</a></li>
+          <li><a href="/convert/weight">Kilograms to Pounds</a></li>
+          <li><a href="/convert/temperature">Celsius to Fahrenheit</a></li>
+          <li><a href="/convert/length">Miles to Kilometers</a></li>
+          <li><a href="/convert/volume">Liters to Gallons</a></li>
+          <li><a href="/convert/digital">GB to MB</a></li>
+          <li><a href="/convert/currency">USD to EUR</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links">
+        <h3 class="footer-heading">Company</h3>
+        <ul>
+          <li><a href="/about">About Us</a></li>
+          <li><a href="/contact">Contact Us</a></li>
+          <li><a href="/privacy">Privacy Policy</a></li>
+          <li><a href="/terms">Terms &amp; Conditions</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="divider" style="margin: var(--sp-xxl) 0 var(--sp-lg);" />
+
+    <div class="footer-legal">
+      <p>&copy; {year} Unit Converter. Free to use.</p>
+      <nav class="footer-legal-links" aria-label="Legal">
+        <a href="/privacy">Privacy Policy</a>
+        <span aria-hidden="true">·</span>
+        <a href="/terms">Terms &amp; Conditions</a>
+        <span aria-hidden="true">·</span>
+        <a href="/contact">Contact</a>
+      </nav>
+    </div>
+    <p class="footer-disclaimer">Exchange rates are indicative only and not financial advice.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--color-canvas-soft);
+    border-top: 1px solid var(--color-hairline);
+    padding: var(--sp-huge) 0 var(--sp-xxl);
+    margin-top: var(--sp-huge);
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr 1fr 1fr;
+    gap: var(--sp-xxl);
+  }
+
+  @media (max-width: 900px) {
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 560px) {
+    .footer-grid { grid-template-columns: 1fr; }
+  }
+
+  .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    text-decoration: none;
+    color: var(--color-ink);
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: var(--sp-md);
+  }
+  .footer-logo:hover { text-decoration: none; }
+
+  .footer-tagline {
+    font-size: 14px;
+    color: var(--color-ink-mute);
+    line-height: 1.6;
+    max-width: 300px;
+  }
+
+  .footer-heading {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-ink-mute);
+    margin-bottom: var(--sp-md);
+  }
+
+  .footer-links ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .footer-links a {
+    font-size: 14px;
+    color: var(--color-ink-2);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .footer-links a:hover { color: var(--color-primary); text-decoration: none; }
+
+  .footer-legal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--sp-sm);
+  }
+
+  .footer-legal p {
+    font-size: 13px;
+    color: var(--color-ink-mute);
+  }
+
+  .footer-legal-links {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    flex-wrap: wrap;
+  }
+
+  .footer-legal-links a {
+    font-size: 13px;
+    color: var(--color-ink-mute);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .footer-legal-links a:hover { color: var(--color-primary); }
+
+  .footer-legal-links span {
+    color: var(--color-hairline-input);
+    font-size: 12px;
+  }
+
+  .footer-disclaimer {
+    font-size: 12px;
+    color: var(--color-ink-mute);
+    font-style: italic;
+    margin-top: var(--sp-sm);
+  }
+</style>

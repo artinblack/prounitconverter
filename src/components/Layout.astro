@@ -1,0 +1,118 @@
+---
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import SchemaOrg from './SchemaOrg.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  schemas?: object[];
+  activeCategoryId?: string;
+  ogTitle?: string;
+  noIndex?: boolean;
+  keywords?: string;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  schemas = [],
+  activeCategoryId,
+  ogTitle,
+  noIndex = false,
+  keywords = 'unit converter, length converter, weight converter, temperature converter, metric converter, imperial converter, online unit conversion tool',
+} = Astro.props;
+
+const canonicalUrl = canonical ?? Astro.url.href;
+---
+
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="keywords" content={keywords} />
+    <meta name="robots" content={noIndex ? 'noindex, nofollow' : 'index, follow'} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={ogTitle ?? title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content="Unit Converter" />
+    <meta property="og:image" content="https://prounitconverter.com/og-image.png" />
+    <meta property="og:image:alt" content="Unit Converter — Free online unit conversion tool" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={ogTitle ?? title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content="https://prounitconverter.com/og-image.png" />
+    <meta name="twitter:image:alt" content="Unit Converter — Free online unit conversion tool" />
+
+    <!-- Favicon & PWA -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#5956f9" />
+
+    <!-- Google Fonts — Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+    />
+
+    <!-- Schema.org -->
+    {schemas.length > 0 && <SchemaOrg schemas={schemas} />}
+
+    <!-- Google Analytics -->
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-TWEFW0PH3K"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-TWEFW0PH3K');
+    </script>
+
+    <!-- Service Worker registration -->
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
+
+    <!-- Dark mode — must run before first paint to avoid FOUC -->
+    <script is:inline>
+      (function() {
+        try {
+          var saved = localStorage.getItem('uc_theme');
+          var pref  = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.dataset.theme = pref;
+        } catch(e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <Header activeCategoryId={activeCategoryId} />
+    <main id="main-content">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

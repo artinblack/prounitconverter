@@ -1,0 +1,100 @@
+---
+import ConverterWidget from '../../components/ConverterWidget.astro';
+import { categories } from '../../lib/units';
+import '../../styles/global.css';
+
+export async function getStaticPaths() {
+  return categories.map(cat => ({
+    params: { category: cat.id },
+    props:  { category: cat },
+  }));
+}
+
+const { category } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{category.name} Converter — Embed</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" />
+
+    <!-- Dark mode FOUC prevention -->
+    <script is:inline>
+      (function() {
+        try {
+          var p = window.location.search;
+          var theme = new URLSearchParams(p).get('theme') || localStorage.getItem('uc_theme') || 'light';
+          document.documentElement.dataset.theme = theme;
+        } catch(e) {}
+      })();
+    </script>
+
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; }
+      body {
+        font-family: 'Inter', system-ui, sans-serif;
+        font-weight: 300;
+        background: var(--color-canvas);
+        color: var(--color-ink);
+        padding: 16px;
+      }
+
+      .embed-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--color-hairline);
+      }
+
+      .embed-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--color-ink);
+      }
+
+      .embed-brand {
+        font-size: 11px;
+        color: var(--color-ink-mute);
+        text-decoration: none;
+      }
+      .embed-brand:hover { color: var(--color-primary); }
+
+      .embed-footer {
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid var(--color-hairline);
+        font-size: 11px;
+        color: var(--color-ink-mute);
+        text-align: center;
+      }
+      .embed-footer a { color: var(--color-primary); text-decoration: none; }
+      .embed-footer a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div class="embed-header">
+      <span class="embed-title">{category.icon} {category.name} Converter</span>
+      <a href="https://prounitconverter.com" target="_blank" rel="noopener" class="embed-brand">
+        prounitconverter.com ↗
+      </a>
+    </div>
+
+    <ConverterWidget category={category} compact={true} />
+
+    <div class="embed-footer">
+      Powered by <a href="https://prounitconverter.com" target="_blank" rel="noopener">prounitconverter.com</a>
+      — free unit converter
+    </div>
+  </body>
+</html>

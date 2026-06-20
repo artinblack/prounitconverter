@@ -1,0 +1,87 @@
+---
+import type { Category } from '../lib/units';
+import { formatResult } from '../lib/units';
+
+interface Props {
+  category: Category;
+  fromUnitId: string;
+  inputValue?: number;
+}
+
+const { category, fromUnitId, inputValue = 1 } = Astro.props;
+const fromUnit = category.units.find(u => u.id === fromUnitId) ?? category.units[0];
+---
+
+<section class="conversion-table-section">
+  <div class="table-header-row">
+    <h2 class="table-title">
+      {inputValue} {fromUnit.name} equals…
+    </h2>
+    <button class="print-btn btn btn-ghost btn-sm" onclick="window.print()" aria-label="Print conversion table">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print
+    </button>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="conversion-table" id={`table-${category.id}`} aria-label={`${category.name} conversion table`}>
+      <thead>
+        <tr>
+          <th scope="col">Value</th>
+          <th scope="col">Unit</th>
+          <th scope="col">Name</th>
+        </tr>
+      </thead>
+      <tbody id={`table-body-${category.id}`}>
+        {category.units
+          .filter(u => u.id !== fromUnitId)
+          .map(toUnit => {
+            const isClientOnly = category.id === 'temperature' || category.id === 'numbase';
+            let result: number = 0;
+            if (!isClientOnly) {
+              const baseValue = inputValue * fromUnit.factor;
+              result = baseValue / toUnit.factor;
+            }
+            return (
+              <tr data-unit-id={toUnit.id}>
+                <td class="td-value" data-base={fromUnit.factor} data-target={toUnit.factor}>
+                  {isClientOnly ? '—' : formatResult(result)}
+                </td>
+                <td class="td-symbol">{toUnit.symbol}</td>
+                <td class="td-name">{toUnit.name}</td>
+              </tr>
+            );
+          })}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<style>
+  .conversion-table-section {
+    margin-top: var(--sp-xxl);
+  }
+
+  .table-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-md);
+    margin-bottom: var(--sp-lg);
+  }
+
+  .table-title {
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: -0.2px;
+    color: var(--color-ink);
+    margin-bottom: 0;
+  }
+
+  .table-wrapper {
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-lg);
+    overflow: hidden;
+    background: var(--color-canvas);
+  }
+</style>

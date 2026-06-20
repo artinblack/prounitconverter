@@ -1,0 +1,24 @@
+---
+import Layout from '../components/Layout.astro';
+---
+
+<Layout
+  title="Server Error (500) — Unit Converter"
+  description="We're experiencing a temporary issue on our end. Please try again in a moment or return to the Unit Converter homepage."
+  noIndex={true}
+>
+  <div class="error-container">
+    <div class="error-content">
+      <div class="error-code" aria-hidden="true">500</div>
+      <h1 class="error-title">Something Went Wrong</h1>
+      <p class="error-message">
+        We're experiencing a temporary issue on our end. Please try refreshing
+        the page. If the problem persists, <a href="/contact">let us know</a>.
+      </p>
+      <div class="error-actions">
+        <a href="/" class="btn-primary">Go to Homepage</a>
+        <button onclick="window.location.reload()" class="btn-outline">Try Again</button>
+      </div>
+    </div>
+  </div>
+</Layout>

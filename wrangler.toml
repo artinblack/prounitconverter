@@ -1,0 +1,6 @@
+name = "unit-converter"
+compatibility_date = "2025-06-18"
+workers_dev = false
+
+[assets]
+directory = "./dist"

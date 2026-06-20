@@ -1,0 +1,62 @@
+{
+  "name": "Unit Converter — Free Online Tool",
+  "short_name": "Unit Converter",
+  "description": "Convert length, weight, temperature, area, volume, speed, digital storage, time, and currency instantly.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#5956f9",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Length converter on desktop"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Length Converter",
+      "url": "/convert/length",
+      "description": "Convert meters, feet, inches, km"
+    },
+    {
+      "name": "Weight Converter",
+      "url": "/convert/weight",
+      "description": "Convert kg, lbs, oz, grams"
+    },
+    {
+      "name": "Temperature Converter",
+      "url": "/convert/temperature",
+      "description": "Convert Celsius, Fahrenheit, Kelvin"
+    },
+    {
+      "name": "Currency Converter",
+      "url": "/convert/currency",
+      "description": "Live exchange rates"
+    }
+  ]
+}

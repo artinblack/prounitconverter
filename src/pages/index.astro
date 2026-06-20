@@ -1,0 +1,614 @@
+---
+import Layout from '../components/Layout.astro';
+import ConverterWidget from '../components/ConverterWidget.astro';
+import ConversionTable from '../components/ConversionTable.astro';
+import CategoryGrid from '../components/CategoryGrid.astro';
+import { categories, categoryMap } from '../lib/units';
+
+const lengthCategory = categoryMap.get('length')!;
+
+const siteUrl = 'https://prounitconverter.com';
+
+const faqs = [
+  {
+    q: 'How do I convert feet to meters?',
+    a: 'To convert feet to meters, multiply the number of feet by 0.3048. For example, 10 feet × 0.3048 = 3.048 meters. Use our free converter above to get instant results.',
+  },
+  {
+    q: 'How do I convert inches to millimeters (mm)?',
+    a: 'One inch equals exactly 25.4 millimeters. Multiply your inch value by 25.4 to get millimeters. Our converter handles this instantly as you type.',
+  },
+  {
+    q: 'Can I convert money and currency online?',
+    a: 'Yes! Our currency converter category supports USD, EUR, GBP, JPY, INR, CAD, AUD, CHF, CNY, and AED with live exchange rates updated each time you use it.',
+  },
+  {
+    q: 'Is this unit converter free?',
+    a: 'Completely free — no sign-up, no ads, no download required. It works entirely in your browser.',
+  },
+  {
+    q: 'Can I use this unit converter app on my phone?',
+    a: 'Yes. The site is fully mobile-optimized with large touch-friendly inputs and dropdowns. It works on iOS, Android, and any modern browser.',
+  },
+  {
+    q: 'What unit categories are supported?',
+    a: 'We support 14 categories: Length, Weight, Temperature, Area, Volume, Speed, Digital Storage, Time, Currency, Angle, Pressure, Energy, Density, and Power — covering the most common conversion needs.',
+  },
+  {
+    q: 'How do I convert Celsius to Fahrenheit?',
+    a: 'Use the formula °F = (°C × 9/5) + 32. For example, 25°C = (25 × 1.8) + 32 = 77°F. Our temperature converter handles this automatically.',
+  },
+  {
+    q: 'How accurate are the conversions?',
+    a: 'All conversions use exact or NIST-defined factors and are calculated to up to 8 significant figures. Currency rates are live mid-market rates.',
+  },
+  {
+    q: 'What is a unit converter?',
+    a: 'A unit converter is a tool that translates a value expressed in one unit of measurement into its equivalent in a different unit within the same physical quantity. For example, converting 5 kilometers into miles, or 100 grams into ounces. Our online unit converter covers 14 categories — length, weight, temperature, area, volume, speed, digital storage, time, currency, angle, pressure, energy, density, and power — handling the most common everyday and professional conversion needs in a single, free tool.',
+  },
+  {
+    q: 'How can you convert units?',
+    a: 'Every unit conversion follows the same principle: multiply the input value by a conversion factor. To convert kilometers to miles, multiply by 0.621371. To convert Celsius to Fahrenheit, apply °F = (°C × 9/5) + 32. On this site, the formula and conversion factor are displayed directly below each result so you can always verify the math. Simply select a category, type your value, choose the source and target units, and the result appears instantly — no button to press.',
+  },
+  {
+    q: 'How do you convert between nm, μm, mm, m, and km?',
+    a: 'These are all metric length units built on powers of ten relative to the meter (the SI base unit of length). The relationships are: 1 nm (nanometer) = 0.000001 mm = 0.000000001 m. 1 μm (micrometer) = 0.001 mm = 0.000001 m. 1 mm = 0.001 m. 1 m = 0.001 km. Use our Length Converter — select the source unit (e.g., nm) and the target unit (e.g., mm) — and the conversion happens automatically. The full table shows equivalents across all units at once.',
+  },
+  {
+    q: 'What happened to the Google unit converter?',
+    a: "Google's built-in unit converter is still available by searching phrases like \"100 km to miles\" or \"convert kg to lbs\" directly in Google Search — it shows a quick widget at the top of results. However, it is limited to a handful of basic categories and shows no formulas, no conversion history, and no batch mode. Our unit converter is a dedicated tool with 14 categories, formula display, conversion history, keyboard shortcuts, and offline PWA support — a more complete alternative you can bookmark or install on your device.",
+  },
+  {
+    q: 'How do you convert wavenumbers (cm⁻¹) to joules?',
+    a: 'The wavenumber (cm⁻¹) is a unit used in infrared and Raman spectroscopy representing wave cycles per centimeter. To convert to joules, use the formula: E = h × c × ν̃ — where h is Planck\'s constant (6.626 × 10⁻³⁴ J·s), c is the speed of light (2.998 × 10¹⁰ cm/s), and ν̃ is the wavenumber. For example, 1000 cm⁻¹ ≈ 1.986 × 10⁻²⁰ J. While this specific conversion is a physics formula rather than a simple factor, our Energy Converter handles all standard joule conversions — between kJ, kcal, kWh, BTU, and electronvolts.',
+  },
+];
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Unit Converter',
+    url: siteUrl,
+    applicationCategory: 'UtilityApplication',
+    operatingSystem: 'Any',
+    browserRequirements: 'Requires JavaScript',
+    description: 'Free online unit converter calculator for weight, length, area, time, currency, density, power, pressure, energy, and more. 14 categories, 120+ units, live exchange rates.',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    author: { '@type': 'Organization', name: 'Unit Converter' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(faq => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: { '@type': 'Answer', text: faq.a },
+    })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'How to Convert Units Online',
+    description: 'Step-by-step guide to converting units using our free online unit converter.',
+    step: [
+      { '@type': 'HowToStep', name: 'Select a category', text: 'Choose the category you need — length, weight, temperature, and more.' },
+      { '@type': 'HowToStep', name: 'Enter your value', text: 'Type the value you want to convert into the "From" input field.' },
+      { '@type': 'HowToStep', name: 'Select your units', text: 'Choose the source unit and the target unit from the dropdowns.' },
+      { '@type': 'HowToStep', name: 'Read the result', text: 'The result updates instantly as you type. Copy it with one click.' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Unit Converter',
+    url: siteUrl,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${siteUrl}/convert/{search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
+  },
+];
+---
+
+<Layout
+  title="Unit Converter — Free Online Unit Converter Calculator | 14 Categories"
+  description="Free online unit converter for weight, length, area, time, currency, density, power & more. Instant results, live exchange rates, formula display. No sign-up, no ads."
+  schemas={schemas}
+>
+  <!-- ═══════════════════════════════════════════
+       HERO
+  ════════════════════════════════════════════ -->
+  <section class="hero-mesh hero-section">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-eyebrow">
+          <span class="pill-tag pill-tag-soft">Free · No sign-up · Live currency rates</span>
+        </div>
+
+        <h1 class="display-xxl hero-headline">
+          Free Online<br />Unit Converter
+        </h1>
+
+        <p class="body-lg hero-sub">
+          Convert length, weight, temperature, area, volume, speed, digital storage, time, and currency — instantly, in your browser.
+        </p>
+      </div>
+
+      <!-- Featured converter -->
+      <div class="hero-widget-wrap">
+        <div class="hero-widget-header">
+          <nav class="widget-cat-tabs" aria-label="Quick category switch">
+            {categories.slice(0, 5).map(cat => (
+              <a href={`/convert/${cat.id}`} class="widget-cat-tab">
+                <span aria-hidden="true">{cat.icon}</span>
+                {cat.name}
+              </a>
+            ))}
+            <a href="/convert/length" class="widget-cat-tab widget-cat-tab--more">More →</a>
+          </nav>
+        </div>
+        <ConverterWidget category={lengthCategory} />
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       CONVERSION TABLE
+  ════════════════════════════════════════════ -->
+  <section class="section-sm">
+    <div class="container">
+      <ConversionTable category={lengthCategory} fromUnitId="m" inputValue={1} />
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       ALL CATEGORIES
+  ════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="display-lg">All Unit Converters</h2>
+        <p class="body-lg" style="color: var(--color-ink-mute); margin-top: 8px;">
+          14 categories · 120+ units · Live currency rates
+        </p>
+      </div>
+      <div style="margin-top: var(--sp-xxl);">
+        <CategoryGrid />
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       POPULAR CONVERSIONS STRIP
+  ════════════════════════════════════════════ -->
+  <section class="pop-strip">
+    <div class="container">
+      <h2 class="heading-sm pop-strip-title">Popular conversions</h2>
+      <div class="unit-links">
+        <a href="/convert/ft-to-m"   class="unit-link">Feet to Meters</a>
+        <a href="/convert/in-to-cm"  class="unit-link">Inches to Centimeters</a>
+        <a href="/convert/km-to-mi"  class="unit-link">Kilometers to Miles</a>
+        <a href="/convert/mi-to-km"  class="unit-link">Miles to Kilometers</a>
+        <a href="/convert/kg-to-lb"  class="unit-link">Kg to Pounds</a>
+        <a href="/convert/lb-to-kg"  class="unit-link">Pounds to Kg</a>
+        <a href="/convert/c-to-f"    class="unit-link">Celsius to Fahrenheit</a>
+        <a href="/convert/f-to-c"    class="unit-link">Fahrenheit to Celsius</a>
+        <a href="/convert/l-to-gal"  class="unit-link">Liters to Gallons</a>
+        <a href="/convert/GB-to-MB"  class="unit-link">GB to MB</a>
+        <a href="/convert/USD-to-EUR" class="unit-link">USD to EUR</a>
+        <a href="/convert/kmh-to-mph" class="unit-link">km/h to mph</a>
+        <a href="/convert/mm-to-in"  class="unit-link">mm to Inches</a>
+        <a href="/convert/psi-to-kpa" class="unit-link">PSI to kPa</a>
+        <a href="/convert/kw-to-hp"  class="unit-link">kW to HP</a>
+        <a href="/convert/deg-to-rad" class="unit-link">Degrees to Radians</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       FAVORITES (client-rendered)
+  ════════════════════════════════════════════ -->
+  <section class="section-sm favorites-section" id="favorites-section" hidden>
+    <div class="container">
+      <h2 class="heading-sm" style="color: var(--color-ink-mute); text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; font-weight: 600; margin-bottom: var(--sp-lg);">
+        Your Favorites
+      </h2>
+      <div class="unit-links" id="favorites-list"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       HOW IT WORKS
+  ════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="container">
+      <h2 class="display-lg how-title">How to convert units</h2>
+      <div class="how-grid">
+        {[
+          { n: '1', title: 'Choose a category', body: 'Select the type of measurement you need — length, weight, temperature, or one of the 9 categories.' },
+          { n: '2', title: 'Enter your value', body: 'Type any number into the input field. Results update instantly as you type — no button to press.' },
+          { n: '3', title: 'Pick your units', body: 'Choose the source unit and target unit from the dropdowns. Swap them with the ⇄ button.' },
+          { n: '4', title: 'Copy the result', body: 'One-click copy saves the full conversion to your clipboard, ready to paste anywhere.' },
+        ].map(step => (
+          <div class="how-step card">
+            <div class="how-num">{step.n}</div>
+            <h3 class="heading-sm" style="margin-bottom: 6px;">{step.title}</h3>
+            <p class="body-md" style="color: var(--color-ink-mute);">{step.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       SEO DESCRIPTION SECTION
+  ════════════════════════════════════════════ -->
+  <section class="section seo-about" style="border-top: 1px solid var(--color-hairline);">
+    <div class="container seo-about-inner">
+
+      <h2 class="seo-about-title">What Is a Unit Converter — and Why Does It Matter?</h2>
+
+      <div class="seo-cols">
+        <div class="seo-col">
+          <p>
+            A <strong>unit converter</strong> is a tool that translates a measurement expressed in one unit into its
+            equivalent in another. Whether you're a student checking lab results, a chef adapting a recipe from grams
+            to ounces, or an engineer comparing metric and imperial specs, an accurate <strong>online unit
+            converter</strong> eliminates guesswork and saves time. Our tool is free, works entirely in your browser,
+            and covers over 120 units across 14 measurement categories — no app download, no account, no ads.
+          </p>
+
+          <h3>One Calculator for Every Measurement Type</h3>
+          <p>
+            Most people reach for a <strong>unit converter calculator</strong> when a single number needs to cross a
+            unit boundary — feet into meters, liters into gallons, or Celsius into Fahrenheit. But real-world work
+            rarely stops at one pair. That's why every page on this site also shows a live <strong>unit converter
+            chart</strong>: enter any value and the entire table of equivalents refreshes instantly, so you can scan
+            across all units at once rather than converting one-by-one.
+          </p>
+
+          <h3>Weight, Length, and Area Converters</h3>
+          <p>
+            The <strong>weight unit converter</strong> supports milligrams, grams, kilograms, metric tons, ounces,
+            pounds, stones, and US tons — covering cooking, shipping, fitness, and industrial use cases in a single
+            dropdown. Our <strong>unit converter for length</strong> spans millimeters all the way to nautical miles,
+            making it equally useful for a carpenter measuring timber and a pilot reading a flight plan. Need to
+            calculate how many square feet fit in a hectare? The <strong>unit converter for area</strong> covers
+            square millimeters, square meters, square kilometers, acres, and hectares, with both metric and imperial
+            options side by side.
+          </p>
+
+          <h3>Time, Money, and Density</h3>
+          <p>
+            The <strong>time unit converter</strong> handles everything from milliseconds to Julian years — useful
+            for project planning, physics calculations, or simply figuring out how many minutes are in a week. Our
+            <strong>unit converter for money</strong> fetches live mid-market exchange rates and supports the world's
+            most traded currencies: USD, EUR, GBP, JPY, INR, CAD, AUD, CHF, CNY, and AED. Rates are cached in your
+            browser for one hour, so repeated conversions in a session don't require extra network requests.
+          </p>
+          <p>
+            Less common but equally important, the <strong>density unit converter</strong> bridges kg/m³, g/cm³,
+            g/L, lb/ft³, and lb/in³ — the units that appear in chemistry labs, materials datasheets, and food
+            production specifications. Each unit includes a short definition so you can verify you're picking the
+            right one before you convert.
+          </p>
+        </div>
+
+        <div class="seo-col">
+          <h3>Power and Electricity Converters</h3>
+          <p>
+            Our <strong>power unit converter</strong> supports Watts, kilowatts, megawatts, gigawatts, mechanical
+            and metric horsepower, BTU/h, and calories per second. This makes it the go-to
+            <strong>electricity unit converter</strong> for comparing appliance ratings, sizing solar installations,
+            or translating engine output between regions. Pair it with the energy converter — which covers joules,
+            kilowatt-hours, BTUs, and kilocalories — and you have everything needed for a complete energy audit
+            without switching tabs.
+          </p>
+
+          <h3>Metric Converter — SI and Imperial in One Place</h3>
+          <p>
+            As a full <strong>metric unit converter</strong>, every SI base unit and its most common multiples are
+            available across length, area, volume, weight, speed, pressure, energy, and power categories. Imperial
+            and US customary units sit in the same dropdowns, so converting metric to imperial — or imperial to
+            metric — is always one selection away. No separate "imperial mode" to toggle; both systems live together
+            because most real work crosses that boundary daily.
+          </p>
+
+          <h3>Torque, Pressure, and Engineering Units</h3>
+          <p>
+            Mechanical and civil engineers often need a reliable <strong>torque unit converter</strong> for
+            converting Newton-meters to foot-pounds and inch-pounds, and our pressure converter covers Pascal,
+            kilopascal, megapascal, bar, atm, PSI, Torr, mmHg, and inHg — the units that show up in pneumatic
+            systems, hydraulics, and weather reports alike. Torque conversion is on the roadmap as part of our
+            ongoing expansion into engineering-specific measurement categories.
+          </p>
+
+          <h3>A Unit Converter App That Works Everywhere</h3>
+          <p>
+            Although there's nothing to download, this <strong>unit converter app</strong> can be added to your
+            home screen on Android or iOS using the browser's "Add to Home Screen" option. Once installed, it
+            works offline, remembers your last-used unit pairs in each category, and launches in under a second.
+            Keyboard shortcuts (press <kbd>S</kbd> to swap, <kbd>C</kbd> to copy, <kbd>?</kbd> for the full list)
+            make repetitive conversions faster than any native app.
+          </p>
+          <p>
+            Whether you need a quick <strong>unit converter online</strong> for a one-off calculation or a reliable
+            daily companion for professional measurements, this tool is built to give you the right answer,
+            instantly — with the formula shown so you can always check the math yourself.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       FAQ
+  ════════════════════════════════════════════ -->
+  <section class="section" style="background: var(--color-canvas-soft); border-top: 1px solid var(--color-hairline); border-bottom: 1px solid var(--color-hairline);">
+    <div class="container">
+      <h2 class="display-lg" style="margin-bottom: var(--sp-xxl);">Frequently asked questions</h2>
+
+      <div class="faq-list">
+        {faqs.map((faq, i) => (
+          <div class="faq-item" id={`faq-${i}`}>
+            <button
+              class="faq-question"
+              aria-expanded="false"
+              aria-controls={`faq-answer-${i}`}
+            >
+              {faq.q}
+              <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <div class="faq-answer" id={`faq-answer-${i}`} role="region">
+              <p>{faq.a}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* Hero */
+  .hero-section {
+    padding: var(--sp-huge) 0 var(--sp-xxl);
+  }
+
+  .hero-content {
+    text-align: center;
+    max-width: 660px;
+    margin: 0 auto var(--sp-xxl);
+  }
+
+  .hero-eyebrow {
+    margin-bottom: var(--sp-lg);
+  }
+
+  .hero-headline {
+    margin-bottom: var(--sp-lg);
+    color: var(--color-ink);
+  }
+
+  .hero-sub {
+    color: var(--color-ink-2);
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* Widget wrapper */
+  .hero-widget-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    border-radius: var(--rounded-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-2);
+    border: 1px solid var(--color-hairline);
+  }
+
+  .hero-widget-header {
+    background: var(--color-canvas-soft);
+    border-bottom: 1px solid var(--color-hairline);
+    padding: var(--sp-sm) var(--sp-lg);
+  }
+
+  .hero-widget-wrap .converter-widget {
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* Quick tabs */
+  .widget-cat-tabs {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .widget-cat-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: var(--rounded-pill);
+    font-size: 13px;
+    color: var(--color-ink-mute);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .widget-cat-tab:hover {
+    background: var(--color-hairline);
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  .widget-cat-tab--more {
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+
+  /* Section header */
+  .section-header { margin-bottom: 0; }
+
+  /* Popular strip */
+  .pop-strip {
+    background: var(--color-canvas-cream);
+    padding: var(--sp-xxl) 0;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  [data-theme="dark"] .pop-strip {
+    background: var(--color-canvas-soft);
+    border-color: var(--color-hairline);
+  }
+
+  .pop-strip-title {
+    margin-bottom: var(--sp-lg);
+    color: var(--color-ink-mute);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+
+  /* How it works */
+  .how-title { margin-bottom: var(--sp-xxl); }
+
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--sp-lg);
+  }
+
+  @media (max-width: 900px) {
+    .how-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 500px) {
+    .how-grid { grid-template-columns: 1fr; }
+  }
+
+  .how-step {
+    padding: var(--sp-xl);
+  }
+
+  .how-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: var(--sp-md);
+    flex-shrink: 0;
+  }
+
+  /* FAQ */
+  .faq-list { max-width: 760px; }
+
+  /* SEO about section */
+  .seo-about { background: var(--color-canvas); }
+
+  .seo-about-inner { max-width: 1120px; }
+
+  .seo-about-title {
+    font-size: clamp(20px, 3vw, 26px);
+    font-weight: 400;
+    letter-spacing: -0.3px;
+    color: var(--color-ink);
+    margin-bottom: var(--sp-xxl);
+  }
+
+  .seo-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-xxl);
+    align-items: start;
+  }
+
+  @media (max-width: 760px) {
+    .seo-cols { grid-template-columns: 1fr; }
+  }
+
+  .seo-col h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-ink);
+    margin: var(--sp-xl) 0 var(--sp-sm);
+  }
+
+  .seo-col h3:first-child { margin-top: 0; }
+
+  .seo-col p {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--color-ink-2);
+    margin-bottom: var(--sp-md);
+  }
+
+  .seo-col p:last-child { margin-bottom: 0; }
+
+  .seo-col strong { color: var(--color-ink); font-weight: 500; }
+
+  .seo-col kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    font-size: 12px;
+    font-family: monospace;
+    background: var(--color-canvas-soft);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-xs);
+    color: var(--color-ink);
+  }
+</style>
+
+<script>
+  // FAQ accordion
+  document.querySelectorAll<HTMLButtonElement>('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item')!;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(el => {
+        el.classList.remove('open');
+        el.querySelector('.faq-question')?.setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  // Favorites section — reads all uc_fav_* keys from localStorage
+  (function renderFavorites() {
+    const favSection = document.getElementById('favorites-section') as HTMLElement | null;
+    const favList    = document.getElementById('favorites-list') as HTMLElement | null;
+    if (!favSection || !favList) return;
+
+    const favKeys = Object.keys(localStorage).filter(k => k.startsWith('uc_fav_'));
+    if (favKeys.length === 0) return;
+
+    favSection.removeAttribute('hidden');
+    favKeys.forEach(key => {
+      try {
+        const fav = JSON.parse(localStorage.getItem(key) ?? '{}') as { label?: string; categoryId?: string; fromId?: string; toId?: string };
+        if (!fav.label || !fav.fromId || !fav.toId) return;
+        const a = document.createElement('a');
+        a.href = `/convert/${fav.fromId}-to-${fav.toId}`;
+        a.className = 'unit-link';
+        a.textContent = fav.label;
+        favList.appendChild(a);
+      } catch {}
+    });
+  })();
+</script>
