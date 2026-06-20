@@ -6,17 +6,19 @@ All copy below is ready to paste. Complete Phase 1 assets first, then submit to 
 
 ## Phase 1: Assets Checklist
 
-- [ ] Site is live at https://prounitconverter.com
-- [ ] API returns JSON: https://prounitconverter.com/api
-- [ ] PWA install prompt works on mobile
-- [ ] Screenshots captured (run `npx tsx scripts/capture-screenshots.ts` with dev server running)
-  - `scripts/screenshots/marketing/1-desktop-light.png`
-  - `scripts/screenshots/marketing/2-desktop-dark.png`
-  - `scripts/screenshots/marketing/3-mobile.png`
-  - `scripts/screenshots/marketing/4-batch-mode.png`
-  - `scripts/screenshots/marketing/5-categories-open.png`
-- [ ] Logo: `public/web-app-manifest-192x192.png`
-- [ ] Demo video recorded and uploaded to YouTube as unlisted (optional but recommended)
+- [x] Site is live at https://prounitconverter.com — 200 OK, 0.46s response
+- [x] API returns JSON:
+  - https://prounitconverter.com/api/units.json — full unit catalog
+  - https://prounitconverter.com/api/convert/m-to-ft.json — per-pair conversion factor + formula
+- [x] PWA manifest valid (`/manifest.webmanifest` — icons, start_url, standalone display confirmed) — **verify install prompt manually on iOS Safari / Android Chrome**
+- [x] Screenshots captured and verified (all correct dimensions, pixel-perfect)
+  - `scripts/screenshots/marketing/1-desktop-light.png` — 1280×800 ✓
+  - `scripts/screenshots/marketing/2-desktop-dark.png` — 1280×800 ✓
+  - `scripts/screenshots/marketing/3-mobile.png` — 375×812 ✓
+  - `scripts/screenshots/marketing/4-batch-mode.png` — 1280×800 ✓
+  - `scripts/screenshots/marketing/5-categories-open.png` — 1280×800 ✓
+- [x] Logo: `public/web-app-manifest-192x192.png` — 192×192 PNG, 7.5 KB ✓
+- [ ] Demo video recorded and uploaded to YouTube as unlisted (optional but recommended — do after submissions)
 
 ---
 
