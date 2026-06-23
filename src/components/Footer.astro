@@ -16,6 +16,14 @@ const year = new Date().getFullYear();
           <span>Unit Converter</span>
         </a>
         <p class="footer-tagline">Fast, free, accurate unit conversions for length, weight, temperature, area, volume, speed, digital storage, time, and currency.</p>
+        <div class="fazier-badges">
+          <a href="https://fazier.com/launches/prounitconverter.com" target="_blank" rel="noopener noreferrer">
+            <img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=dark" width="120" alt="Fazier badge" />
+          </a>
+          <a href="https://fazier.com/launches/prounitconverter.com" target="_blank" rel="noopener noreferrer">
+            <img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=featured&theme=dark" width="250" alt="Fazier badge" />
+          </a>
+        </div>
       </div>
 
       <div class="footer-links">
@@ -164,6 +172,14 @@ const year = new Date().getFullYear();
   .footer-legal-links span {
     color: var(--color-hairline-input);
     font-size: 12px;
+  }
+
+  .fazier-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-sm);
+    margin-top: var(--sp-md);
+    align-items: center;
   }
 
   .footer-disclaimer {

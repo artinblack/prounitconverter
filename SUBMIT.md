@@ -71,55 +71,73 @@ unit converter, calculator, measurement, productivity, utilities, science, engin
 
 ---
 
-## Platform 2: Toolify.ai (toolify.ai)
+## Platform 2: Product Hunt (producthunt.com)
 
-1. Submit: https://toolify.ai/submit
-2. Fill in:
-   - **Tool name**: Pro Unit Converter
-   - **Website**: https://prounitconverter.com?utm_source=toolify&utm_medium=directory&utm_campaign=priority2
-   - **Short description**: ← short pitch above
-   - **Category**: Productivity Tools → Utilities
-   - **Tags**: unit converter, calculator, measurement, science, free
+1. Create account at producthunt.com if you don't have one
+2. Find a hunter with followers to post on your behalf, or post yourself
+3. Schedule launch for a Tuesday or Wednesday (highest traffic days), 12:01 AM PT
+4. Fill in:
+   - **Name**: Pro Unit Converter
+   - **Tagline**: ← one-liner above (≤60 chars — trim if needed)
+   - **URL**: https://prounitconverter.com?utm_source=producthunt&utm_medium=directory&utm_campaign=priority2
+   - **Description**: ← long description above
+   - **Topics**: Productivity, Developer Tools, Education
+   - **Media**: upload `1-desktop-light.png`, `2-desktop-dark.png`, `3-mobile.png`
+   - **Thumbnail**: `public/web-app-manifest-192x192.png`
+5. On launch day: post a Maker comment introducing yourself and the tool, respond to every comment within the first 2 hours
+6. Share the launch link with friends and ask for upvotes (not reviews — Product Hunt penalises fake upvotes, so only ask people who will genuinely use it)
+
+---
+
+## Platform 3: Fazier (fazier.com)
+
+Free Product Hunt-style weekly launch platform — no paid tiers.
+
+1. Create account at fazier.com
+2. Click "Submit a product"
+3. Fill in:
+   - **Name**: Pro Unit Converter
+   - **Website**: https://prounitconverter.com?utm_source=fazier&utm_medium=directory&utm_campaign=priority2
+   - **Tagline**: ← one-liner above
+   - **Description**: ← short pitch above
+   - **Category**: Productivity / Utilities
    - **Pricing**: Free
    - **Logo**: `public/web-app-manifest-192x192.png` (192×192 PNG)
    - **Screenshot**: `1-desktop-light.png`
-   - **Video**: ← YouTube unlisted URL (if recorded)
-3. Review time: 1–3 days
-4. After approval: tweet mentioning @toolify_ai with your listing URL
+4. Fazier features tools weekly — similar cadence to Uneed but free
 
 ---
 
-## Platform 3: SaaSHub (saashub.com)
+## Platform 3b: SaaSHub (saashub.com)
 
-1. Submit: https://www.saashub.com/submit-product
+Free software discovery platform — no submission fee.
+
+1. Go to saashub.com and click "Add product"
+2. Fill in:
+   - **Name**: Pro Unit Converter
+   - **URL**: https://prounitconverter.com?utm_source=saashub&utm_medium=directory&utm_campaign=priority2
+   - **Description**: ← long description above
+   - **Category**: Developer Tools / Utilities
+   - **Status**: Active
+   - **Pricing**: Free
+   - **Logo**: `public/web-app-manifest-192x192.png`
+3. Approval is usually within a few days
+4. SaaSHub also auto-tracks your tool as an alternative to competitors once listed
+
+---
+
+## Platform 4: 10words.io (10words.io)
+
+1. Submit: search "10words.io submit" — the submission form is on their site
 2. Fill in:
    - **Product name**: Pro Unit Converter
-   - **Website**: https://prounitconverter.com?utm_source=saashub&utm_medium=directory&utm_campaign=priority2
-   - **Description**: ← long description above
-   - **Category**: Developer Tools → Calculators / Converters
-   - **Pricing**: Free
-   - **Screenshots**: `1-desktop-light.png` + `2-desktop-dark.png`
-   - **Alternatives**: unitconversion.org, onlineconversion.com
-3. Review time: 1–5 business days
-4. After approval: embed their "get reviews" widget on the site for testimonials
-
----
-
-## Platform 4: FuturePedia (futurepedia.io)
-
-1. Submit: https://www.futurepedia.io/submit-tool
-2. Fill in:
-   - **Tool name**: Pro Unit Converter
-   - **URL**: https://prounitconverter.com?utm_source=futurepedia&utm_medium=directory&utm_campaign=priority2
-   - **Tagline**: ← one-liner above
-   - **Description**: ← short pitch above
+   - **URL**: https://prounitconverter.com?utm_source=10words&utm_medium=directory&utm_campaign=priority2
+   - **10-word description**: Free unit converter — 16 categories, 120+ units, works offline
    - **Category**: Productivity → Utilities
-   - **Pricing model**: Free
-   - **Tags**: unit converter, calculator, science, engineering
-   - **Screenshot**: `1-desktop-light.png`
-   - **Video embed**: ← YouTube unlisted URL (if recorded)
-3. Review time: 24–48 hours
-4. Tip: submit Monday or Tuesday morning — FuturePedia's newsletter goes out mid-week
+   - **Pricing**: Free
+   - **Logo**: `public/web-app-manifest-192x192.png`
+3. Very fast approval (often same day)
+4. Simple format — the 10-word constraint forces a sharp hook; use the one above or write your own
 
 ---
 
