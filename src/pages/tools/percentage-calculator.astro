@@ -1,0 +1,80 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('percentage-calculator')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <!-- Mode 1: X% of Y -->
+    <div class="pc-block">
+      <div class="tw-row">
+        <span>What is</span>
+        <input id="pc1-p" class="input tw-mono" type="number" step="any" value="20" style="width:90px;" aria-label="Percent" />
+        <span>% of</span>
+        <input id="pc1-n" class="input tw-mono" type="number" step="any" value="150" style="width:110px;" aria-label="Number" />
+        <span>?</span>
+      </div>
+      <div class="tw-result"><span class="tw-result-key">Result</span><span class="tw-result-val" id="pc1-out">30</span></div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Mode 2: X is what % of Y -->
+    <div class="pc-block">
+      <div class="tw-row">
+        <input id="pc2-a" class="input tw-mono" type="number" step="any" value="30" style="width:110px;" aria-label="Part" />
+        <span>is what % of</span>
+        <input id="pc2-b" class="input tw-mono" type="number" step="any" value="150" style="width:110px;" aria-label="Whole" />
+        <span>?</span>
+      </div>
+      <div class="tw-result"><span class="tw-result-key">Result</span><span class="tw-result-val" id="pc2-out">20%</span></div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Mode 3: % change -->
+    <div class="pc-block">
+      <div class="tw-row">
+        <span>% change from</span>
+        <input id="pc3-a" class="input tw-mono" type="number" step="any" value="80" style="width:110px;" aria-label="Original value" />
+        <span>to</span>
+        <input id="pc3-b" class="input tw-mono" type="number" step="any" value="100" style="width:110px;" aria-label="New value" />
+      </div>
+      <div class="tw-result"><span class="tw-result-key">Result</span><span class="tw-result-val" id="pc3-out">+25% increase</span></div>
+    </div>
+  </div>
+</ToolLayout>
+
+<style>
+  .pc-block { display: flex; flex-direction: column; gap: var(--sp-md); }
+  .pc-block .tw-row { font-size: 15px; color: var(--color-ink-2); }
+</style>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const num = (id: string) => parseFloat(($<HTMLInputElement>(id)).value);
+  const round = (n: number) => Math.round(n * 1e4) / 1e4;
+
+  function run1() {
+    const p = num('pc1-p'), n = num('pc1-n');
+    $('pc1-out').textContent = isNaN(p) || isNaN(n) ? '—' : String(round(p / 100 * n));
+  }
+  function run2() {
+    const a = num('pc2-a'), b = num('pc2-b');
+    $('pc2-out').textContent = isNaN(a) || isNaN(b) || b === 0 ? '—' : `${round(a / b * 100)}%`;
+  }
+  function run3() {
+    const a = num('pc3-a'), b = num('pc3-b');
+    if (isNaN(a) || isNaN(b) || a === 0) { $('pc3-out').textContent = '—'; return; }
+    const change = round((b - a) / Math.abs(a) * 100);
+    const label = change > 0 ? 'increase' : change < 0 ? 'decrease' : 'no change';
+    const sign = change > 0 ? '+' : '';
+    $('pc3-out').textContent = `${sign}${change}% ${label}`;
+  }
+
+  ['pc1-p', 'pc1-n'].forEach(id => $<HTMLInputElement>(id).addEventListener('input', run1));
+  ['pc2-a', 'pc2-b'].forEach(id => $<HTMLInputElement>(id).addEventListener('input', run2));
+  ['pc3-a', 'pc3-b'].forEach(id => $<HTMLInputElement>(id).addEventListener('input', run3));
+  run1(); run2(); run3();
+</script>

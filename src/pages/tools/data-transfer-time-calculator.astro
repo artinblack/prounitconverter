@@ -1,0 +1,101 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('data-transfer-time-calculator')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-field">
+      <span class="tw-label">File size</span>
+      <div class="tw-row">
+        <input id="dt-size" class="input tw-mono" type="number" min="0" step="any" value="5" style="flex:1;min-width:0;" />
+        <select id="dt-size-unit" class="input" style="max-width:130px;" aria-label="File size unit">
+          <option value="1e3">KB</option>
+          <option value="1e6" selected>MB</option>
+          <option value="1e9">GB</option>
+          <option value="1e12">TB</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tw-field">
+      <span class="tw-label">Connection speed</span>
+      <div class="tw-row">
+        <input id="dt-speed" class="input tw-mono" type="number" min="0" step="any" value="100" style="flex:1;min-width:0;" />
+        <select id="dt-speed-unit" class="input" style="max-width:130px;" aria-label="Speed unit">
+          <option value="kbps">Kbps</option>
+          <option value="mbps" selected>Mbps</option>
+          <option value="gbps">Gbps</option>
+          <option value="mbs">MB/s</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tw-result">
+      <span class="tw-result-key">Estimated time</span>
+      <span class="tw-result-val" id="dt-out">—</span>
+      <button class="tw-copy" data-copy="dt-out">Copy</button>
+    </div>
+    <p class="tw-note">Best-case theoretical time (1 byte = 8 bits). Real transfers run 10–30% slower.</p>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const sizeIn = $<HTMLInputElement>('dt-size');
+  const sizeUnit = $<HTMLSelectElement>('dt-size-unit');
+  const speedIn = $<HTMLInputElement>('dt-speed');
+  const speedUnit = $<HTMLSelectElement>('dt-speed-unit');
+  const out = $('dt-out');
+
+  // returns bits per second
+  function speedToBps(val: number, unit: string): number {
+    switch (unit) {
+      case 'kbps': return val * 1e3;
+      case 'mbps': return val * 1e6;
+      case 'gbps': return val * 1e9;
+      case 'mbs': return val * 1e6 * 8; // MB/s → bits/s
+      default: return val;
+    }
+  }
+
+  function fmt(seconds: number): string {
+    if (!isFinite(seconds) || seconds <= 0) return '—';
+    if (seconds < 1) return `${(seconds * 1000).toFixed(0)} ms`;
+    const d = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.round(seconds % 60);
+    const parts = [];
+    if (d) parts.push(`${d}d`);
+    if (h) parts.push(`${h}h`);
+    if (m) parts.push(`${m}m`);
+    if (s || parts.length === 0) parts.push(`${s}s`);
+    return parts.join(' ');
+  }
+
+  function run() {
+    const sizeBytes = (parseFloat(sizeIn.value) || 0) * parseFloat(sizeUnit.value);
+    const bps = speedToBps(parseFloat(speedIn.value) || 0, speedUnit.value);
+    if (sizeBytes <= 0 || bps <= 0) { out.textContent = '—'; return; }
+    const seconds = (sizeBytes * 8) / bps;
+    out.textContent = fmt(seconds);
+  }
+
+  [sizeIn, sizeUnit, speedIn, speedUnit].forEach(el => el.addEventListener('input', run));
+
+  document.querySelectorAll<HTMLButtonElement>('.tw-copy[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const txt = document.getElementById(btn.dataset.copy!)?.textContent ?? '';
+      if (!txt || txt === '—') return;
+      try {
+        await navigator.clipboard.writeText(txt);
+        const old = btn.textContent; btn.textContent = 'Copied!'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = old; btn.classList.remove('copied'); }, 1400);
+      } catch {}
+    });
+  });
+
+  run();
+</script>

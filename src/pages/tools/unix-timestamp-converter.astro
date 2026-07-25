@@ -1,0 +1,116 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('unix-timestamp-converter')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-row" style="justify-content:space-between;">
+      <span class="tw-label">Current Unix time</span>
+      <span class="tw-result-val" id="ts-now" style="text-align:left;flex:none;"></span>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="tw-field">
+      <label class="tw-label" for="ts-epoch">Timestamp → date</label>
+      <input id="ts-epoch" class="input input-lg tw-mono" type="text" inputmode="numeric" value="1700000000" autocomplete="off" spellcheck="false" />
+    </div>
+    <div class="tw-toggle" role="group" aria-label="Timestamp unit">
+      <button id="ts-unit-s" aria-pressed="true">Seconds</button>
+      <button id="ts-unit-ms" aria-pressed="false">Milliseconds</button>
+    </div>
+    <div class="tw-field" style="gap:8px;">
+      <div class="tw-result"><span class="tw-result-key">UTC</span><span class="tw-result-val" id="ts-utc">—</span><button class="tw-copy" data-copy="ts-utc">Copy</button></div>
+      <div class="tw-result"><span class="tw-result-key">Local</span><span class="tw-result-val" id="ts-local">—</span><button class="tw-copy" data-copy="ts-local">Copy</button></div>
+      <div class="tw-result"><span class="tw-result-key">Relative</span><span class="tw-result-val" id="ts-rel">—</span></div>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="tw-field">
+      <label class="tw-label" for="ts-date">Date → timestamp</label>
+      <input id="ts-date" class="input" type="datetime-local" step="1" />
+    </div>
+    <div class="tw-field" style="gap:8px;">
+      <div class="tw-result"><span class="tw-result-key">Unix (s)</span><span class="tw-result-val" id="ts-out-s">—</span><button class="tw-copy" data-copy="ts-out-s">Copy</button></div>
+      <div class="tw-result"><span class="tw-result-key">Unix (ms)</span><span class="tw-result-val" id="ts-out-ms">—</span><button class="tw-copy" data-copy="ts-out-ms">Copy</button></div>
+    </div>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const epochIn = $<HTMLInputElement>('ts-epoch');
+  const dateIn = $<HTMLInputElement>('ts-date');
+  const btnS = $<HTMLButtonElement>('ts-unit-s'), btnMs = $<HTMLButtonElement>('ts-unit-ms');
+  let unit: 's' | 'ms' = 's';
+
+  const fmtUTC = (d: Date) => d.toUTCString();
+  const fmtLocal = (d: Date) => d.toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'long' });
+
+  function relative(ms: number): string {
+    const diff = ms - Date.now();
+    const abs = Math.abs(diff);
+    const units: [number, string][] = [[31536e6, 'year'], [2592e6, 'month'], [864e5, 'day'], [36e5, 'hour'], [6e4, 'minute'], [1e3, 'second']];
+    for (const [u, name] of units) {
+      if (abs >= u) { const v = Math.round(diff / u); return new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' }).format(v, name as Intl.RelativeTimeFormatUnit); }
+    }
+    return 'just now';
+  }
+
+  function decode() {
+    const raw = epochIn.value.trim();
+    if (!/^-?\d+$/.test(raw)) { $('ts-utc').textContent = $('ts-local').textContent = $('ts-rel').textContent = '—'; return; }
+    const ms = unit === 's' ? Number(raw) * 1000 : Number(raw);
+    const d = new Date(ms);
+    if (isNaN(d.getTime())) { $('ts-utc').textContent = 'Invalid'; return; }
+    $('ts-utc').textContent = fmtUTC(d);
+    $('ts-local').textContent = fmtLocal(d);
+    $('ts-rel').textContent = relative(ms);
+  }
+
+  function encode() {
+    const v = dateIn.value;
+    if (!v) { $('ts-out-s').textContent = $('ts-out-ms').textContent = '—'; return; }
+    const ms = new Date(v).getTime();
+    if (isNaN(ms)) return;
+    $('ts-out-s').textContent = String(Math.floor(ms / 1000));
+    $('ts-out-ms').textContent = String(ms);
+  }
+
+  function setUnit(u: 's' | 'ms') {
+    unit = u;
+    btnS.setAttribute('aria-pressed', String(u === 's'));
+    btnMs.setAttribute('aria-pressed', String(u === 'ms'));
+    decode();
+  }
+
+  btnS.addEventListener('click', () => setUnit('s'));
+  btnMs.addEventListener('click', () => setUnit('ms'));
+  epochIn.addEventListener('input', decode);
+  dateIn.addEventListener('input', encode);
+
+  document.querySelectorAll<HTMLButtonElement>('.tw-copy[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const txt = document.getElementById(btn.dataset.copy!)?.textContent ?? '';
+      if (!txt || txt === '—') return;
+      try {
+        await navigator.clipboard.writeText(txt);
+        const old = btn.textContent; btn.textContent = 'Copied!'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = old; btn.classList.remove('copied'); }, 1400);
+      } catch {}
+    });
+  });
+
+  // Live "now" ticker + prefill date box with current local time
+  const nowEl = $('ts-now');
+  function tick() { nowEl.textContent = String(Math.floor(Date.now() / 1000)); }
+  tick(); setInterval(tick, 1000);
+
+  // Prefill the date box with the current local date-time (for the datetime-local input)
+  dateIn.value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 19);
+
+  decode(); encode();
+</script>

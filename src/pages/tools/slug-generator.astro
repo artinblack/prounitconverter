@@ -1,0 +1,95 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('slug-generator')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-field">
+      <label class="tw-label" for="sg-input">Title or text</label>
+      <textarea id="sg-input" class="tw-textarea" placeholder="e.g. My First Blog Post!" spellcheck="false">My First Blog Post!</textarea>
+    </div>
+
+    <div class="tw-row" style="gap:var(--sp-lg);">
+      <div class="tw-field" style="gap:6px;">
+        <span class="tw-label">Separator</span>
+        <div class="tw-toggle" role="group" aria-label="Separator">
+          <button id="sg-sep-hyphen" aria-pressed="true">Hyphen -</button>
+          <button id="sg-sep-underscore" aria-pressed="false">Underscore _</button>
+        </div>
+      </div>
+      <div class="tw-field" style="gap:6px;">
+        <span class="tw-label">Case</span>
+        <div class="tw-toggle" role="group" aria-label="Case">
+          <button id="sg-case-lower" aria-pressed="true">lowercase</button>
+          <button id="sg-case-keep" aria-pressed="false">Keep case</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tw-result">
+      <span class="tw-result-key">Slug</span>
+      <span class="tw-result-val" id="sg-out">my-first-blog-post</span>
+      <button class="tw-copy" data-copy="sg-out">Copy</button>
+    </div>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const input = $<HTMLTextAreaElement>('sg-input');
+  const out = $('sg-out');
+  const sepHyphen = $<HTMLButtonElement>('sg-sep-hyphen'), sepUnderscore = $<HTMLButtonElement>('sg-sep-underscore');
+  const caseLower = $<HTMLButtonElement>('sg-case-lower'), caseKeep = $<HTMLButtonElement>('sg-case-keep');
+  let sep = '-';
+  let keepCase = false;
+
+  function slugify(text: string): string {
+    let s = text
+      .normalize('NFKD')                    // split accents from letters
+      .replace(/[̀-ͯ]/g, '')      // strip diacritics
+      .replace(/[^a-zA-Z0-9\s\-_]/g, '')    // drop non-url chars
+      .trim()
+      .replace(/[\s-_]+/g, sep);            // collapse whitespace/dashes to separator
+    if (!keepCase) s = s.toLowerCase();
+    // trim leading/trailing separators
+    const esc = sep === '-' ? '-' : '_';
+    return s.replace(new RegExp(`^[${esc}]+|[${esc}]+$`, 'g'), '');
+  }
+
+  function run() { out.textContent = slugify(input.value) || '—'; }
+
+  function setSep(s: string) {
+    sep = s;
+    sepHyphen.setAttribute('aria-pressed', String(s === '-'));
+    sepUnderscore.setAttribute('aria-pressed', String(s === '_'));
+    run();
+  }
+  function setCase(keep: boolean) {
+    keepCase = keep;
+    caseKeep.setAttribute('aria-pressed', String(keep));
+    caseLower.setAttribute('aria-pressed', String(!keep));
+    run();
+  }
+
+  sepHyphen.addEventListener('click', () => setSep('-'));
+  sepUnderscore.addEventListener('click', () => setSep('_'));
+  caseLower.addEventListener('click', () => setCase(false));
+  caseKeep.addEventListener('click', () => setCase(true));
+  input.addEventListener('input', run);
+
+  document.querySelectorAll<HTMLButtonElement>('.tw-copy[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const txt = document.getElementById(btn.dataset.copy!)?.textContent ?? '';
+      if (!txt || txt === '—') return;
+      try {
+        await navigator.clipboard.writeText(txt);
+        const old = btn.textContent; btn.textContent = 'Copied!'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = old; btn.classList.remove('copied'); }, 1400);
+      } catch {}
+    });
+  });
+
+  run();
+</script>

@@ -1,0 +1,121 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('time-zone-converter')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-grid">
+      <div class="tw-field">
+        <label class="tw-label" for="tz-source">From time zone</label>
+        <select id="tz-source" class="input"></select>
+      </div>
+      <div class="tw-field">
+        <label class="tw-label" for="tz-datetime">Date &amp; time</label>
+        <input id="tz-datetime" class="input" type="datetime-local" step="60" />
+      </div>
+    </div>
+
+    <div class="tw-row">
+      <select id="tz-add-select" class="input" style="flex:1;min-width:0;" aria-label="Add a time zone"></select>
+      <button class="btn btn-secondary btn-sm" id="tz-add-btn">Add zone</button>
+    </div>
+
+    <div class="tw-field" style="gap:8px;" id="tz-results"></div>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const sourceSel = $<HTMLSelectElement>('tz-source');
+  const dtIn = $<HTMLInputElement>('tz-datetime');
+  const addSel = $<HTMLSelectElement>('tz-add-select');
+  const addBtn = $<HTMLButtonElement>('tz-add-btn');
+  const results = $('tz-results');
+
+  const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  let zones: string[] = [];
+  try {
+    // @ts-ignore — supportedValuesOf is widely available; fall back if missing
+    zones = (Intl as any).supportedValuesOf ? (Intl as any).supportedValuesOf('timeZone') : [];
+  } catch {}
+  if (!zones.length) {
+    zones = ['UTC','America/New_York','America/Chicago','America/Denver','America/Los_Angeles','Europe/London','Europe/Paris','Europe/Berlin','Asia/Kolkata','Asia/Dubai','Asia/Singapore','Asia/Tokyo','Australia/Sydney'];
+  }
+  if (!zones.includes(localTz)) zones.unshift(localTz);
+
+  const label = (tz: string) => tz.replace(/_/g, ' ');
+  for (const tz of zones) {
+    sourceSel.appendChild(new Option(label(tz), tz));
+    addSel.appendChild(new Option(label(tz), tz));
+  }
+  sourceSel.value = localTz;
+
+  // Offset (ms) of a zone at a given instant: (zone local wall time) − UTC
+  function getOffset(tz: string, date: Date): number {
+    const dtf = new Intl.DateTimeFormat('en-US', { timeZone: tz, hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const m: Record<string, string> = {};
+    for (const p of dtf.formatToParts(date)) m[p.type] = p.value;
+    const asUTC = Date.UTC(+m.year, +m.month - 1, +m.day, +(m.hour === '24' ? '0' : m.hour), +m.minute, +m.second);
+    return asUTC - date.getTime();
+  }
+
+  // Wall time in sourceTz → UTC instant (Date)
+  function zonedToInstant(y: number, mo: number, d: number, h: number, mi: number, tz: string): Date {
+    const guess = Date.UTC(y, mo - 1, d, h, mi, 0);
+    let offset = getOffset(tz, new Date(guess));
+    let instant = guess - offset;
+    offset = getOffset(tz, new Date(instant));
+    return new Date(guess - offset);
+  }
+
+  function offsetLabel(tz: string, date: Date): string {
+    const off = getOffset(tz, date);
+    const sign = off >= 0 ? '+' : '−';
+    const abs = Math.abs(off);
+    const hh = String(Math.floor(abs / 36e5)).padStart(2, '0');
+    const mm = String(Math.floor((abs % 36e5) / 6e4)).padStart(2, '0');
+    return `UTC${sign}${hh}:${mm}`;
+  }
+
+  let targets: string[] = ['America/New_York', 'Europe/London', 'Asia/Tokyo'].filter(t => zones.includes(t));
+  if (!targets.length) targets = [zones[0]];
+
+  function render() {
+    const v = dtIn.value;
+    if (!v) return;
+    const [datePart, timePart] = v.split('T');
+    const [y, mo, d] = datePart.split('-').map(Number);
+    const [h, mi] = timePart.split(':').map(Number);
+    const instant = zonedToInstant(y, mo, d, h, mi, sourceSel.value);
+
+    results.innerHTML = '';
+    for (const tz of targets) {
+      const timeStr = new Intl.DateTimeFormat(undefined, { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' }).format(instant);
+      const row = document.createElement('div');
+      row.className = 'tw-result';
+      row.innerHTML = `<span class="tw-result-key">${label(tz)}<br><small style="font-weight:400;text-transform:none;letter-spacing:0;">${offsetLabel(tz, instant)}</small></span>`;
+      const val = document.createElement('span');
+      val.className = 'tw-result-val';
+      val.textContent = timeStr;
+      row.appendChild(val);
+      const rm = document.createElement('button');
+      rm.className = 'tw-copy';
+      rm.textContent = 'Remove';
+      rm.addEventListener('click', () => { targets = targets.filter(t => t !== tz); render(); });
+      row.appendChild(rm);
+      results.appendChild(row);
+    }
+  }
+
+  addBtn.addEventListener('click', () => {
+    if (!targets.includes(addSel.value)) { targets.push(addSel.value); render(); }
+  });
+  sourceSel.addEventListener('change', render);
+  dtIn.addEventListener('input', render);
+
+  // Prefill with current local time
+  dtIn.value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  render();
+</script>

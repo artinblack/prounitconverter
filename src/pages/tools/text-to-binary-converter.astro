@@ -1,0 +1,124 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('text-to-binary-converter')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-toggle" role="group" aria-label="Direction">
+      <button id="tb-mode-enc" aria-pressed="true">Text → Code</button>
+      <button id="tb-mode-dec" aria-pressed="false">Binary → Text</button>
+    </div>
+
+    <div class="tw-field" id="tb-format-field">
+      <span class="tw-label">Output format</span>
+      <div class="tw-toggle" role="group" aria-label="Output format">
+        <button id="tb-fmt-bin" aria-pressed="true">Binary</button>
+        <button id="tb-fmt-hex" aria-pressed="false">Hex</button>
+        <button id="tb-fmt-dec" aria-pressed="false">Decimal (ASCII)</button>
+      </div>
+    </div>
+
+    <div class="tw-field">
+      <label class="tw-label" for="tb-input" id="tb-in-label">Text</label>
+      <textarea id="tb-input" class="tw-textarea tw-mono" placeholder="Type text to convert…" spellcheck="false">Hello</textarea>
+    </div>
+
+    <div class="tw-field">
+      <label class="tw-label" for="tb-output" id="tb-out-label">Result</label>
+      <textarea id="tb-output" class="tw-textarea tw-mono" readonly></textarea>
+    </div>
+    <div class="tw-actions">
+      <button class="tw-copy" id="tb-copy">Copy</button>
+      <button class="btn btn-ghost btn-sm" id="tb-clear">Clear</button>
+    </div>
+    <p class="tw-note tw-error" id="tb-msg"></p>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const input = $<HTMLTextAreaElement>('tb-input');
+  const output = $<HTMLTextAreaElement>('tb-output');
+  const msg = $('tb-msg');
+  const copyBtn = $<HTMLButtonElement>('tb-copy'), clearBtn = $<HTMLButtonElement>('tb-clear');
+  const inLabel = $('tb-in-label'), outLabel = $('tb-out-label'), fmtField = $('tb-format-field');
+  const btnEnc = $<HTMLButtonElement>('tb-mode-enc'), btnDec = $<HTMLButtonElement>('tb-mode-dec');
+  const fmtBin = $<HTMLButtonElement>('tb-fmt-bin'), fmtHex = $<HTMLButtonElement>('tb-fmt-hex'), fmtDec = $<HTMLButtonElement>('tb-fmt-dec');
+  let mode: 'enc' | 'dec' = 'enc';
+  let fmt: 'bin' | 'hex' | 'dec' = 'bin';
+
+  const codePoints = (s: string) => Array.from(s).map(ch => ch.codePointAt(0)!);
+
+  function textToCode(s: string): string {
+    const cps = codePoints(s);
+    if (fmt === 'bin') return cps.map(c => c.toString(2).padStart(8, '0')).join(' ');
+    if (fmt === 'hex') return cps.map(c => c.toString(16).padStart(2, '0').toUpperCase()).join(' ');
+    return cps.join(' ');
+  }
+
+  function codeToText(s: string): string {
+    const tokens = s.trim().split(/\s+/).filter(Boolean);
+    if (!tokens.length) return '';
+    const nums = tokens.map(tok => {
+      if (/^[01]+$/.test(tok)) return parseInt(tok, 2);
+      if (/^0x[0-9a-f]+$/i.test(tok)) return parseInt(tok, 16);
+      if (/^[0-9a-f]{2}$/i.test(tok) && /[a-f]/i.test(tok)) return parseInt(tok, 16);
+      if (/^\d+$/.test(tok)) return parseInt(tok, 10);
+      if (/^[0-9a-f]+$/i.test(tok)) return parseInt(tok, 16);
+      return NaN;
+    });
+    if (nums.some(n => isNaN(n) || n < 0 || n > 0x10ffff)) throw new Error('bad');
+    return nums.map(n => String.fromCodePoint(n)).join('');
+  }
+
+  function run() {
+    msg.textContent = '';
+    const s = input.value;
+    if (!s.trim()) { output.value = ''; return; }
+    try {
+      output.value = mode === 'enc' ? textToCode(s) : codeToText(s);
+    } catch {
+      output.value = '';
+      msg.textContent = 'Could not decode — check the input uses binary, hex, or decimal codes separated by spaces.';
+    }
+  }
+
+  function setMode(m: 'enc' | 'dec') {
+    mode = m;
+    btnEnc.setAttribute('aria-pressed', String(m === 'enc'));
+    btnDec.setAttribute('aria-pressed', String(m === 'dec'));
+    inLabel.textContent = m === 'enc' ? 'Text' : 'Binary / hex / decimal codes';
+    outLabel.textContent = m === 'enc' ? 'Result' : 'Decoded text';
+    fmtField.style.display = m === 'enc' ? '' : 'none';
+    input.placeholder = m === 'enc' ? 'Type text to convert…' : 'Paste codes separated by spaces…';
+    run();
+  }
+
+  function setFmt(f: 'bin' | 'hex' | 'dec') {
+    fmt = f;
+    fmtBin.setAttribute('aria-pressed', String(f === 'bin'));
+    fmtHex.setAttribute('aria-pressed', String(f === 'hex'));
+    fmtDec.setAttribute('aria-pressed', String(f === 'dec'));
+    run();
+  }
+
+  btnEnc.addEventListener('click', () => setMode('enc'));
+  btnDec.addEventListener('click', () => setMode('dec'));
+  fmtBin.addEventListener('click', () => setFmt('bin'));
+  fmtHex.addEventListener('click', () => setFmt('hex'));
+  fmtDec.addEventListener('click', () => setFmt('dec'));
+  input.addEventListener('input', run);
+  copyBtn.addEventListener('click', async () => {
+    if (!output.value) return;
+    try {
+      await navigator.clipboard.writeText(output.value);
+      copyBtn.textContent = 'Copied!'; copyBtn.classList.add('copied');
+      setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1400);
+    } catch {}
+  });
+  clearBtn.addEventListener('click', () => { input.value = ''; output.value = ''; msg.textContent = ''; input.focus(); });
+
+  run();
+</script>

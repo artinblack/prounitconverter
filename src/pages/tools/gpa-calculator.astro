@@ -1,0 +1,86 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('gpa-calculator')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="gpa-head">
+      <span class="tw-label" style="flex:1;">Course (optional)</span>
+      <span class="tw-label" style="width:110px;">Grade</span>
+      <span class="tw-label" style="width:90px;">Credits</span>
+      <span style="width:32px;"></span>
+    </div>
+    <div id="gpa-rows"></div>
+
+    <div class="tw-actions">
+      <button class="btn btn-ghost btn-sm" id="gpa-add">+ Add course</button>
+    </div>
+
+    <div class="tw-result">
+      <span class="tw-result-key">Your GPA</span>
+      <span class="tw-result-val" id="gpa-out">0.00</span>
+      <span class="tw-note" id="gpa-credits" style="flex-shrink:0;">0 credits</span>
+    </div>
+  </div>
+</ToolLayout>
+
+<style>
+  .gpa-head { display: flex; gap: var(--sp-sm); align-items: center; }
+  .gpa-row { display: flex; gap: var(--sp-sm); align-items: center; margin-bottom: var(--sp-sm); }
+  .gpa-row .gpa-name { flex: 1; min-width: 0; }
+  .gpa-row .gpa-grade { width: 110px; }
+  .gpa-row .gpa-credit { width: 90px; }
+  .gpa-remove {
+    width: 32px; height: 32px; flex-shrink: 0;
+    border: 1px solid var(--color-hairline); border-radius: var(--rounded-sm);
+    background: var(--color-canvas); color: var(--color-ink-mute); cursor: pointer;
+  }
+  .gpa-remove:hover { color: #dc2626; border-color: #dc2626; }
+</style>
+
+<script>
+  const GRADES: [string, number][] = [
+    ['A', 4.0], ['A-', 3.7], ['B+', 3.3], ['B', 3.0], ['B-', 2.7],
+    ['C+', 2.3], ['C', 2.0], ['C-', 1.7], ['D+', 1.3], ['D', 1.0], ['F', 0.0],
+  ];
+  const rowsEl = document.getElementById('gpa-rows') as HTMLElement;
+  const out = document.getElementById('gpa-out') as HTMLElement;
+  const creditsEl = document.getElementById('gpa-credits') as HTMLElement;
+
+  function optionsHtml(): string {
+    return GRADES.map(([g]) => `<option value="${g}">${g}</option>`).join('');
+  }
+
+  function addRow(credits = '3') {
+    const row = document.createElement('div');
+    row.className = 'gpa-row';
+    row.innerHTML =
+      `<input class="input gpa-name" type="text" placeholder="e.g. Calculus" aria-label="Course name" />` +
+      `<select class="input gpa-grade" aria-label="Grade">${optionsHtml()}</select>` +
+      `<input class="input gpa-credit tw-mono" type="number" min="0" step="0.5" value="${credits}" aria-label="Credit hours" />` +
+      `<button class="gpa-remove" aria-label="Remove course">×</button>`;
+    rowsEl.appendChild(row);
+    row.querySelector('.gpa-grade')!.addEventListener('change', calc);
+    row.querySelector('.gpa-credit')!.addEventListener('input', calc);
+    row.querySelector('.gpa-remove')!.addEventListener('click', () => { row.remove(); calc(); });
+    calc();
+  }
+
+  function calc() {
+    const map = new Map(GRADES);
+    let totalPoints = 0, totalCredits = 0;
+    rowsEl.querySelectorAll('.gpa-row').forEach(row => {
+      const grade = (row.querySelector('.gpa-grade') as HTMLSelectElement).value;
+      const credit = parseFloat((row.querySelector('.gpa-credit') as HTMLInputElement).value) || 0;
+      if (credit > 0) { totalPoints += (map.get(grade) ?? 0) * credit; totalCredits += credit; }
+    });
+    out.textContent = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00';
+    creditsEl.textContent = `${totalCredits} credit${totalCredits === 1 ? '' : 's'}`;
+  }
+
+  document.getElementById('gpa-add')!.addEventListener('click', () => addRow());
+  // seed with three rows
+  addRow(); addRow(); addRow();
+</script>

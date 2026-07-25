@@ -1,0 +1,88 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('base64-converter')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-toggle" role="group" aria-label="Direction">
+      <button id="b64-mode-enc" aria-pressed="true">Encode → Base64</button>
+      <button id="b64-mode-dec" aria-pressed="false">Decode → Text</button>
+    </div>
+
+    <div class="tw-field">
+      <label class="tw-label" for="b64-input" id="b64-in-label">Text to encode</label>
+      <textarea id="b64-input" class="tw-textarea tw-mono" placeholder="Type or paste here…" spellcheck="false"></textarea>
+    </div>
+
+    <div class="tw-field">
+      <label class="tw-label" for="b64-output" id="b64-out-label">Base64 result</label>
+      <textarea id="b64-output" class="tw-textarea tw-mono" readonly></textarea>
+    </div>
+    <div class="tw-actions">
+      <button class="tw-copy" id="b64-copy">Copy</button>
+      <button class="btn btn-ghost btn-sm" id="b64-clear">Clear</button>
+    </div>
+    <p class="tw-note tw-error" id="b64-msg"></p>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const input = $<HTMLTextAreaElement>('b64-input');
+  const output = $<HTMLTextAreaElement>('b64-output');
+  const msg = $('b64-msg'), copyBtn = $<HTMLButtonElement>('b64-copy'), clearBtn = $<HTMLButtonElement>('b64-clear');
+  const inLabel = $('b64-in-label'), outLabel = $('b64-out-label');
+  const btnEnc = $<HTMLButtonElement>('b64-mode-enc'), btnDec = $<HTMLButtonElement>('b64-mode-dec');
+  let mode: 'enc' | 'dec' = 'enc';
+
+  // UTF-8 safe encode/decode
+  function encode(str: string): string {
+    const bytes = new TextEncoder().encode(str);
+    let bin = '';
+    bytes.forEach(b => { bin += String.fromCharCode(b); });
+    return btoa(bin);
+  }
+  function decode(b64: string): string {
+    const clean = b64.replace(/\s+/g, '');
+    const bin = atob(clean);
+    const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  }
+
+  function run() {
+    msg.textContent = '';
+    const s = input.value;
+    if (!s) { output.value = ''; return; }
+    try {
+      output.value = mode === 'enc' ? encode(s) : decode(s);
+    } catch {
+      output.value = '';
+      msg.textContent = 'That is not a valid Base64 string.';
+    }
+  }
+
+  function setMode(m: 'enc' | 'dec') {
+    mode = m;
+    btnEnc.setAttribute('aria-pressed', String(m === 'enc'));
+    btnDec.setAttribute('aria-pressed', String(m === 'dec'));
+    inLabel.textContent = m === 'enc' ? 'Text to encode' : 'Base64 to decode';
+    outLabel.textContent = m === 'enc' ? 'Base64 result' : 'Decoded text';
+    input.placeholder = m === 'enc' ? 'Type or paste text…' : 'Paste a Base64 string…';
+    run();
+  }
+
+  btnEnc.addEventListener('click', () => setMode('enc'));
+  btnDec.addEventListener('click', () => setMode('dec'));
+  input.addEventListener('input', run);
+  copyBtn.addEventListener('click', async () => {
+    if (!output.value) return;
+    try {
+      await navigator.clipboard.writeText(output.value);
+      copyBtn.textContent = 'Copied!'; copyBtn.classList.add('copied');
+      setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1400);
+    } catch {}
+  });
+  clearBtn.addEventListener('click', () => { input.value = ''; output.value = ''; msg.textContent = ''; input.focus(); });
+</script>

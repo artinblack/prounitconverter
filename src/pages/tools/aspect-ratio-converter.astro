@@ -1,0 +1,89 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('aspect-ratio-converter')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-field">
+      <span class="tw-label">Original size (px)</span>
+      <div class="tw-row">
+        <input id="ar-w" class="input" type="number" min="1" value="1920" aria-label="Original width" />
+        <span aria-hidden="true" style="color:var(--color-ink-mute)">×</span>
+        <input id="ar-h" class="input" type="number" min="1" value="1080" aria-label="Original height" />
+      </div>
+    </div>
+
+    <div class="tw-result">
+      <span class="tw-result-key">Aspect ratio</span>
+      <span class="tw-result-val" id="ar-ratio">16:9</span>
+      <button class="tw-copy" data-copy="ar-ratio">Copy</button>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="tw-field">
+      <span class="tw-label">Resize — keep the ratio</span>
+      <div class="tw-row">
+        <input id="ar-nw" class="input" type="number" min="1" value="1280" aria-label="New width" />
+        <span aria-hidden="true" style="color:var(--color-ink-mute)">×</span>
+        <input id="ar-nh" class="input" type="number" min="1" value="720" aria-label="New height" />
+      </div>
+      <p class="tw-note">Change either box — the other updates to preserve the aspect ratio above.</p>
+    </div>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const w = $<HTMLInputElement>('ar-w'), h = $<HTMLInputElement>('ar-h');
+  const nw = $<HTMLInputElement>('ar-nw'), nh = $<HTMLInputElement>('ar-nh');
+  const ratioOut = $('ar-ratio');
+
+  const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
+
+  function currentRatio(): number {
+    const W = +w.value, H = +h.value;
+    return W > 0 && H > 0 ? W / H : 0;
+  }
+
+  function updateRatio() {
+    const W = Math.round(+w.value), H = Math.round(+h.value);
+    if (W > 0 && H > 0) {
+      const g = gcd(W, H);
+      ratioOut.textContent = `${W / g}:${H / g}`;
+    } else {
+      ratioOut.textContent = '—';
+    }
+    // keep new-size height consistent with new width
+    syncFromWidth();
+  }
+
+  function syncFromWidth() {
+    const r = currentRatio();
+    if (r && +nw.value > 0) nh.value = String(Math.round(+nw.value / r));
+  }
+  function syncFromHeight() {
+    const r = currentRatio();
+    if (r && +nh.value > 0) nw.value = String(Math.round(+nh.value * r));
+  }
+
+  w.addEventListener('input', updateRatio);
+  h.addEventListener('input', updateRatio);
+  nw.addEventListener('input', syncFromWidth);
+  nh.addEventListener('input', syncFromHeight);
+
+  document.querySelectorAll<HTMLButtonElement>('.tw-copy[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const txt = document.getElementById(btn.dataset.copy!)?.textContent ?? '';
+      try {
+        await navigator.clipboard.writeText(txt);
+        const old = btn.textContent; btn.textContent = 'Copied!'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = old; btn.classList.remove('copied'); }, 1400);
+      } catch {}
+    });
+  });
+
+  updateRatio();
+</script>

@@ -1,0 +1,105 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('morse-code-translator')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-toggle" role="group" aria-label="Direction">
+      <button id="mc-mode-enc" aria-pressed="true">Text → Morse</button>
+      <button id="mc-mode-dec" aria-pressed="false">Morse → Text</button>
+    </div>
+
+    <div class="tw-field">
+      <label class="tw-label" for="mc-input" id="mc-in-label">Text</label>
+      <textarea id="mc-input" class="tw-textarea tw-mono" placeholder="Type text to translate…" spellcheck="false">SOS</textarea>
+    </div>
+
+    <div class="tw-field">
+      <label class="tw-label" for="mc-output" id="mc-out-label">Morse code</label>
+      <textarea id="mc-output" class="tw-textarea tw-mono" readonly></textarea>
+    </div>
+    <div class="tw-actions">
+      <button class="tw-copy" id="mc-copy">Copy</button>
+      <button class="btn btn-ghost btn-sm" id="mc-clear">Clear</button>
+    </div>
+    <p class="tw-note tw-error" id="mc-msg"></p>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const input = $<HTMLTextAreaElement>('mc-input');
+  const output = $<HTMLTextAreaElement>('mc-output');
+  const msg = $('mc-msg'), copyBtn = $<HTMLButtonElement>('mc-copy'), clearBtn = $<HTMLButtonElement>('mc-clear');
+  const inLabel = $('mc-in-label'), outLabel = $('mc-out-label');
+  const btnEnc = $<HTMLButtonElement>('mc-mode-enc'), btnDec = $<HTMLButtonElement>('mc-mode-dec');
+  let mode: 'enc' | 'dec' = 'enc';
+
+  const MAP: Record<string, string> = {
+    'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.',
+    'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.',
+    'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-',
+    'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--', 'Z': '--..',
+    '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-',
+    '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.',
+    '.': '.-.-.-', ',': '--..--', '?': '..--..', "'": '.----.', '!': '-.-.--',
+    '/': '-..-.', '(': '-.--.', ')': '-.--.-', '&': '.-...', ':': '---...',
+    ';': '-.-.-.', '=': '-...-', '+': '.-.-.', '-': '-....-', '_': '..--.-',
+    '"': '.-..-.', '$': '...-..-', '@': '.--.-.',
+  };
+  const REV: Record<string, string> = Object.fromEntries(Object.entries(MAP).map(([k, v]) => [v, k]));
+
+  function encode(text: string): string {
+    return text.toUpperCase().split('\n').map(line =>
+      line.split(' ').map(word =>
+        word.split('').map(ch => MAP[ch] ?? (ch.trim() === '' ? '' : '#')).filter(Boolean).join(' ')
+      ).join(' / ')
+    ).join('\n');
+  }
+
+  function decode(code: string): string {
+    return code.trim().split(/\s*\/\s*/).map(word =>
+      word.trim().split(/\s+/).map(tok => REV[tok] ?? (tok ? '#' : '')).join('')
+    ).join(' ');
+  }
+
+  function run() {
+    msg.textContent = '';
+    const s = input.value;
+    if (!s.trim()) { output.value = ''; return; }
+    const result = mode === 'enc' ? encode(s) : decode(s);
+    output.value = result;
+    if (result.includes('#')) msg.textContent = mode === 'enc'
+      ? 'Some characters have no Morse equivalent (shown as #).'
+      : 'Some code groups were not recognized (shown as #). Separate letters with spaces and words with /.';
+  }
+
+  function setMode(m: 'enc' | 'dec') {
+    mode = m;
+    btnEnc.setAttribute('aria-pressed', String(m === 'enc'));
+    btnDec.setAttribute('aria-pressed', String(m === 'dec'));
+    inLabel.textContent = m === 'enc' ? 'Text' : 'Morse code';
+    outLabel.textContent = m === 'enc' ? 'Morse code' : 'Text';
+    input.placeholder = m === 'enc' ? 'Type text to translate…' : 'Paste Morse: . and - , spaces between letters, / between words';
+    if (m === 'dec' && input.value === 'SOS') input.value = '... --- ...';
+    else if (m === 'enc' && input.value === '... --- ...') input.value = 'SOS';
+    run();
+  }
+
+  btnEnc.addEventListener('click', () => setMode('enc'));
+  btnDec.addEventListener('click', () => setMode('dec'));
+  input.addEventListener('input', run);
+  copyBtn.addEventListener('click', async () => {
+    if (!output.value) return;
+    try {
+      await navigator.clipboard.writeText(output.value);
+      copyBtn.textContent = 'Copied!'; copyBtn.classList.add('copied');
+      setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1400);
+    } catch {}
+  });
+  clearBtn.addEventListener('click', () => { input.value = ''; output.value = ''; msg.textContent = ''; input.focus(); });
+
+  run();
+</script>

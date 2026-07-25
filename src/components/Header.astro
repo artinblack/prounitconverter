@@ -50,6 +50,7 @@ const currentPath = Astro.url.pathname;
 
         <div class="header-actions">
           <nav class="header-pages" aria-label="Site pages">
+            <a href="/tools" class={`header-page-link ${currentPath.startsWith('/tools') ? 'active' : ''}`}>Tools</a>
             <a href="/about" class={`header-page-link ${currentPath === '/about' ? 'active' : ''}`}>About</a>
             <a href="/contact" class={`header-page-link ${currentPath === '/contact' ? 'active' : ''}`}>Contact</a>
           </nav>

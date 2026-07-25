@@ -40,6 +40,16 @@ export default defineConfig({
           return { ...item, priority: 0.9, changefreq: 'weekly', lastmod: LAST_MOD };
         }
 
+        // ── Tools hub  /tools  ───────────────────────────────
+        if (path === '/tools' || path === '/tools/') {
+          return { ...item, priority: 0.8, changefreq: 'weekly', lastmod: LAST_MOD };
+        }
+
+        // ── Individual tool pages  /tools/color-converter  ───
+        if (/^\/tools\//.test(path)) {
+          return { ...item, priority: 0.7, changefreq: 'monthly', lastmod: LAST_MOD };
+        }
+
         // ── Developer API page ────────────────────────────────
         if (path === '/api') {
           return { ...item, priority: 0.6, changefreq: 'monthly', lastmod: LAST_MOD };
