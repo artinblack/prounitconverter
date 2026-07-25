@@ -2,63 +2,154 @@
 
 _Last updated: 2026-07-25_
 
-Running backlog. **17 converter tools now shipped** under `/tools/`:
+## Shipped so far
 
-- **Batch 1 (9):** Text Case, Hex/RGB Color, Aspect Ratio, Roman Numeral, Number-to-Words,
-  Unix Timestamp, Time Zone, Base64, Text↔Binary.
-- **Batch 2 (8, from former section B):** CSS Unit Converter, Download-Time Calculator,
-  Percentage Calculator, GPA Calculator, Fraction ⇄ Decimal, Scientific Notation, Morse Code
-  Translator, URL Slug Generator.
+- **17 unit-converter categories** at `/convert/*` + **188 pair pages** (auto reverse-paired).
+- **17 converter/utility tools** at `/tools/*`:
+  - _Batch 1:_ Text Case, Hex/RGB Color, Aspect Ratio, Roman Numeral, Number-to-Words,
+    Unix Timestamp, Time Zone, Base64, Text↔Binary.
+  - _Batch 2:_ CSS Unit, Download-Time, Percentage, GPA, Fraction⇄Decimal, Scientific Notation,
+    Morse Code, URL Slug.
+- **Polish:** per-tool OG images, recently-used tools, deep-link/shareable state, reverse pair pages.
 
-Everything below is scoped for the current stack: **Astro 6 → Cloudflare static Worker,
-hand-written CSS, zero-dependency client-side JS.** Items needing a backend are flagged.
+Stack constraints for everything below: **Astro 6 → Cloudflare static Worker, hand-written CSS,
+zero-dependency client-side JS.** Anything needing a backend/library is flagged.
 
-_(Former section A — the calculators/utilities still sitting in the "UTILITY WEBSITE IDEATION"
-sheet: Age, BMI, Meal Calorie, Readability, Countdown Timer, Dice Roller, Emoji Combiner,
-YouTube Timestamp, Image Cropper, Color Scheme Extractor — was removed from this backlog on
-request. Revisit the sheet directly if/when you want them.)_
+_(The URL Shortener / Unshortener spec was moved out of this backlog — it will be tracked as a
+separate tool/project since it needs its own backend, storage, and abuse hardening.)_
 
 ---
 
-## A. Phase-2: URL Shortener + URL Unshortener (needs a backend)
+# 🎯 Biggest bets — start here
 
-These two were **deferred** because a static site cannot store short-links or follow
-redirects server-side (browser CORS blocks unshortening arbitrary URLs). Recommended build:
+These four have the highest ROI for a converter site and fit the static stack.
 
-**URL Shortener**
-- Storage: **Cloudflare KV** (`SLUG -> {url, createdAt, hits}`) or **D1** if you want analytics/SQL.
-- Route: convert the current assets-only Worker into a Worker with a fetch handler, OR add a
-  small separate Worker bound to `/s/*` and the create API. Keep the Astro static assets as-is.
-- Endpoints: `POST /api/shorten` (validate URL, reject non-http(s), optional custom slug with
-  collision check) and `GET /s/:slug` (302 redirect + increment hit counter).
-- **Abuse controls (important):** rate-limit by IP (Cloudflare Turnstile on the create form),
-  block known malware/phishing domains, disallow open-redirect loops, cap slug creation per IP/day,
-  add a `robots` noindex on `/s/*`, and a report/abuse link. Consider requiring Turnstile before mint.
-- Cost: KV free tier is generous; D1 fine at this scale.
+| Bet | Why it's huge | Effort |
+|-----|---------------|--------|
+| **1. Specific-value pages** — `/convert/100-cm-to-inches`, `/convert/350-f-to-c` | Google surfaces these as featured snippets. Nearly infinite long-tail, generated programmatically from existing pair data + a curated value list. THE growth engine for a converter site. | M (one dynamic route + a values list) |
+| **2. Printable conversion charts** — "cm to inches chart", "kg to lbs chart", "oven temp chart" | High volume, low competition, long dwell time (great AdSense), printable/PDF, naturally link-worthy. Generated from `units.ts`. | S–M |
+| **3. Global ⌘K command palette** — fuzzy search across every converter, pair, and tool | Big UX win → more pages/session, lower bounce. Pure client-side over the data you already export. | M |
+| **4. Expose `density` + `fuel` as live categories** | Both unit arrays are **already coded** in `units.ts` but not in the `categories` list — flipping them on mints two full converter categories + pair pages for near-zero effort. | XS |
 
-**URL Unshortener**
-- Server-side `fetch(url, { redirect: 'manual' })` loop (max ~10 hops) in a Worker, returning the
-  full redirect chain + final destination. Never render remote HTML; only report headers/locations.
-- Safety: timeout per hop, block private IP ranges/SSRF, cap response, don't follow non-http schemes.
+---
 
-**Effort:** M–L combined (mostly the Worker + abuse hardening, not the UI).
+# A. New tools (grouped by theme)
 
-## B. Cross-cutting polish — ✅ shipped 2026-07-25
+Feasibility: **★ native** (works with plain JS / Web APIs) · **◐ tiny-lib** (needs a small
+dependency or non-trivial impl).
 
-- ✅ **Per-tool OG images** — build-time generator `scripts/gen-og.mjs` (`npm run gen:og`,
-  Playwright → 1200×630 PNGs in `public/og/`); `Layout.astro` gained an `ogImage` prop and
-  every tool + the hub now sets its own. Runtime stays fully static.
-- ✅ **"Recently used tools"** — `ToolLayout` records each visit to `localStorage`
-  (`uc_recent_tools`); the hub renders a "Recently used" row when present.
-- ✅ **Copy-link / deep-link state** — shared `src/lib/deeplink.ts` (`bindParam`) syncs a tool's
-  primary input with a URL query param (`?hex=…`, `?text=…`, `?n=…`, …). Wired into 14 tools;
-  GPA and Time Zone were intentionally skipped (multi-field state — future work if wanted).
-- ✅ **Homepage/about counts** — corrected to the real **17** live categories (index + about;
-  removed the non-existent "Density"/"Torque" list entries — those exist only as unit arrays).
-- ✅ **Programmatic converter pages** — `src/lib/units.ts` now auto-adds the reverse of every
-  `commonPair` (+54 pages → 188 pair pages), picked up by pages, links, search, and sitemap.
+### Developer tools (high intent, your dev tools already index well)
+| Tool | Feasibility | Notes |
+|------|-------------|-------|
+| JSON Formatter / Minifier / Validator | ★ | Evergreen dev search; pairs with Base64. |
+| JSON ⇄ CSV ⇄ YAML | ◐ | YAML needs a tiny parser; JSON/CSV native. |
+| JWT Decoder | ★ | Decode header/payload client-side (never verify secrets). |
+| URL Encode / Decode | ★ | `encodeURIComponent`. |
+| HTML Entity Encode / Decode | ★ | |
+| UUID / GUID Generator | ★ | `crypto.randomUUID()`. |
+| Hash Generator (SHA-1/256/384/512) | ★ | Native Web Crypto `subtle.digest`. (MD5 would need a tiny impl.) |
+| Password Generator + strength meter | ★ | `crypto.getRandomValues`. |
+| Color Contrast Checker (WCAG AA/AAA) | ★ | Pairs perfectly with the Color Converter. |
+| Cron Expression Explainer | ★ | Parse + describe in English. |
+| Regex Tester + cheatsheet | ★ | Live match highlighting. |
+| Diff / Text Compare | ◐ | Simple LCS diff is doable native. |
+| QR Code Generator | ◐ | Needs a small QR lib or canvas impl. |
+| Lorem Ipsum Generator | ★ | |
 
-## C. Remaining polish ideas (optional)
+### Date & time
+| Tool | Feasibility | Notes |
+|------|-------------|-------|
+| Date Duration Calculator (days between dates) | ★ | Very high search volume. |
+| Add / Subtract days from a date | ★ | |
+| Business/Working-days calculator | ★ | Skip weekends + holiday list. |
+| Countdown Timer | ★ | From the old sheet; shareable via `?to=`. |
+| Age Calculator | ★ | From the old sheet; huge search. |
+| Week number / Day of year | ★ | |
 
-- Deep-link the two skipped tools (GPA rows, Time Zone selections) via encoded multi-field state.
-- Regenerate OG images whenever a tool's name/tagline changes (`npm run gen:og`, then commit PNGs).
+### Math & numbers
+| Tool | Feasibility | Notes |
+|------|-------------|-------|
+| Random Number Generator / Dice / Coin flip | ★ | Fun + shareable → backlinks. |
+| Ratio / proportion solver (rule of three) | ★ | |
+| Average / mean / median / mode | ★ | |
+| GCD / LCM / Prime checker / Factorial | ★ | |
+| Rounding & significant-figures tool | ★ | Complements Scientific Notation. |
+
+### Text & writing
+| Tool | Feasibility | Notes |
+|------|-------------|-------|
+| Word / Character / Sentence counter (standalone) | ★ | Massive search; extract from Text Case tool. |
+| Line tools: sort, dedupe, reverse, remove blanks | ★ | |
+| Find & Replace (regex) | ★ | |
+| Readability Score (Flesch-Kincaid) | ★ | From the old sheet. |
+| NATO phonetic / ROT13 / Caesar cipher | ★ | Pairs with Morse; puzzle/CTF crowd. |
+
+### Health & finance (top AdSense RPM)
+| Tool | Feasibility | Notes |
+|------|-------------|-------|
+| BMI / BMR-Calorie / Body-Fat / Ideal Weight | ★ | BMI + calorie were in the sheet. |
+| Tip / Discount / Sales-Tax-VAT calculator | ★ | High everyday volume. |
+| Loan-EMI / Mortgage / Compound Interest | ★ | Long sessions, high-value ads. |
+
+### Measurement-niche converters (perfect brand fit, strong long-tail)
+| Tool | Feasibility | Notes |
+|------|-------------|-------|
+| Shoe Size Converter (US/UK/EU/JP) | ★ | Table lookup; very high search. |
+| Ring / Clothing / Hat / Bra size | ★ | |
+| Cooking ingredient weight ⇄ volume (density-aware) | ★ | Flour/sugar/butter densities; extends Cooking. |
+| Fuel Economy (MPG ⇄ L/100km ⇄ km/L) | ★ | `fuel` array already exists — just expose it. |
+| Paper Size (A/B/US) + GSM ⇄ lb weight | ★ | |
+| DPI / PPI / pixel-density calculator | ★ | Pairs with CSS Unit + Aspect Ratio. |
+| AWG wire gauge / screw & bolt size | ★ | Engineering/DIY long-tail. |
+| Frequency ⇄ wavelength, dBm ⇄ mW | ★ | Extend `/convert` with new categories. |
+
+### Fun / viral (links & social)
+Random picker / spinner wheel, name/team picker, gradient generator, leetspeak, palindrome
+checker. All ★ native, all shareable.
+
+---
+
+# B. Programmatic SEO engine (compounding)
+
+| Play | Impact | Notes |
+|------|--------|-------|
+| **Specific-value pages** (`/convert/100-cm-to-inches`) | 🔥🔥🔥 | Biggest bet #1. Generate top-N values per popular pair. |
+| **Printable chart pages** | 🔥🔥 | Biggest bet #2. |
+| **140 CSS named-color pages** | 🔥🔥 | `/color/tomato` → swatch, every format, shades/tints. Pairs with Color Converter; long-tail goldmine. |
+| **Tool-value pages** | 🔥 | `/tools/base64/decode/<hash>`-style share links, "42 in Roman numerals" pages, etc. |
+| **"X vs Y" comparison guides** | 🔥 | Feed converter/tool pages; earn links. |
+| **Internationalization (i18n)** | 🔥🔥 | Large untapped TAM; heavier lift (Astro i18n + translated copy). |
+
+---
+
+# C. Platform & UX features
+
+- **⌘K command palette** (biggest bet #3) — search converters + tools + pairs instantly.
+- **Favorites / pinned tools + a "My tools" dashboard** — reuse the existing recent-tools &
+  converter-favorites localStorage patterns.
+- **Shareable result image** — canvas → PNG card ("1 mile = 1.609 km") for social/Slack.
+- **Batch mode + CSV in/out** — paste a column, convert all; download results. Premium-worthy.
+- **Deep-link the two skipped tools** (GPA rows, Time Zone selections) via encoded multi-field state.
+- **Natural-language search** — extend the header search to parse things like `5'11 to cm`.
+- **PWA polish for tools** — install prompt, offline tool pages, per-tool keyboard shortcuts.
+
+---
+
+# D. Distribution & monetization
+
+- **Productize the `/api`** — API keys, freemium tier, Cloudflare rate limiting, docs. Opens a
+  developer channel and recurring revenue.
+- **Browser extension** — highlight any `number + unit` on any page → instant convert. A genuine
+  distribution/backlink flywheel.
+- **Embeddable tool widgets** (`/embed/tools/*`, mirroring the existing converter embeds) — every
+  embed is a backlink.
+- **Premium tier** — ad-free, batch/CSV, saved presets, higher API quota.
+- **Contextual affiliates** — kitchen scales on the Cooking converter, measuring tools on Length, etc.
+
+---
+
+# E. Remaining polish (quick wins)
+
+- Regenerate OG images when a tool's name/tagline changes: `npm run gen:og`, then commit the PNGs.
+- Sweep any last stray counts as categories grow (source of truth = `categories.length`).
+- Add contextual in-copy internal links between related tools and their matching `/convert` category.

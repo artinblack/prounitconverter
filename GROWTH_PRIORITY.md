@@ -31,7 +31,7 @@ This is a build/marketing priority queue, not a schedule.
 
 | # | Action | I | C | E | Score | Notes |
 |---|--------|---|---|---|-------|-------|
-| 11 | **URL Shortener + Unshortener (Cloudflare KV/D1)** | 4 | 3 | 2 | ~5 | High-intent traffic but backend + abuse hardening. See FUTURE_FEATURES.md §C. |
+| 11 | **URL Shortener + Unshortener (Cloudflare KV/D1)** | 4 | 3 | 2 | ~5 | Tracked as a separate tool/project — needs its own backend, storage, and abuse hardening. |
 | 12 | **Image Cropper + Color Scheme Extractor (canvas)** | 3 | 3 | 2 | ~4 | Heavier UI; good for "tool" backlinks. |
 | 13 | **Blog / conversion guides** | 4 | 2 | 2 | ~3 | "How many X in Y" articles feeding converter pages. |
 
