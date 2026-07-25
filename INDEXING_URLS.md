@@ -42,6 +42,11 @@ Hubs (submit first), then a few top pair pages — the rest ride the sitemap.
 - [ ] https://prounitconverter.com/convert/l100km-to-mpg
 - [ ] https://prounitconverter.com/convert/mpg-to-kml
 
+## Batch 4 — new tools (Age / BMI / Word Counter)
+- [ ] https://prounitconverter.com/tools/age-calculator
+- [ ] https://prounitconverter.com/tools/bmi-calculator
+- [ ] https://prounitconverter.com/tools/word-counter
+
 ---
 
 ## Strategy as the site scales (read this)

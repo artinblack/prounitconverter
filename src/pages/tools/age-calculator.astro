@@ -1,0 +1,103 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('age-calculator')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-grid">
+      <div class="tw-field">
+        <label class="tw-label" for="age-dob">Date of birth</label>
+        <input id="age-dob" class="input" type="date" />
+      </div>
+      <div class="tw-field">
+        <label class="tw-label" for="age-at">Age at date</label>
+        <input id="age-at" class="input" type="date" />
+      </div>
+    </div>
+
+    <div class="tw-result" style="background:var(--color-primary-subtle);border-color:transparent;">
+      <span class="tw-result-key">Your age</span>
+      <span class="tw-result-val" id="age-main" style="font-size:18px;">—</span>
+      <button class="tw-copy" data-copy="age-main">Copy</button>
+    </div>
+
+    <div class="tw-field" style="gap:8px;">
+      <div class="tw-result"><span class="tw-result-key">Total months</span><span class="tw-result-val" id="age-months">—</span></div>
+      <div class="tw-result"><span class="tw-result-key">Total weeks</span><span class="tw-result-val" id="age-weeks">—</span></div>
+      <div class="tw-result"><span class="tw-result-key">Total days</span><span class="tw-result-val" id="age-days">—</span></div>
+      <div class="tw-result"><span class="tw-result-key">Total hours</span><span class="tw-result-val" id="age-hours">—</span></div>
+      <div class="tw-result"><span class="tw-result-key">Next birthday</span><span class="tw-result-val" id="age-next">—</span></div>
+    </div>
+    <p class="tw-note tw-error" id="age-msg"></p>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const dob = $<HTMLInputElement>('age-dob');
+  const at = $<HTMLInputElement>('age-at');
+  const msg = $('age-msg');
+
+  const fmt = (n: number) => n.toLocaleString('en-US');
+
+  function diffYMD(from: Date, to: Date) {
+    let y = to.getFullYear() - from.getFullYear();
+    let m = to.getMonth() - from.getMonth();
+    let d = to.getDate() - from.getDate();
+    if (d < 0) {
+      m -= 1;
+      // days in the month before `to`
+      const prevMonth = new Date(to.getFullYear(), to.getMonth(), 0).getDate();
+      d += prevMonth;
+    }
+    if (m < 0) { y -= 1; m += 12; }
+    return { y, m, d };
+  }
+
+  function run() {
+    msg.textContent = '';
+    if (!dob.value) { ['age-main','age-months','age-weeks','age-days','age-hours','age-next'].forEach(id => $(id).textContent = '—'); return; }
+    const birth = new Date(dob.value + 'T00:00:00');
+    const now = at.value ? new Date(at.value + 'T00:00:00') : new Date();
+    if (isNaN(birth.getTime())) return;
+    if (birth > now) { $('age-main').textContent = '—'; msg.textContent = 'Birth date is after the “age at” date.'; return; }
+
+    const { y, m, d } = diffYMD(birth, now);
+    $('age-main').textContent = `${y} years, ${m} months, ${d} days`;
+
+    const ms = now.getTime() - birth.getTime();
+    const totalDays = Math.floor(ms / 86400000);
+    $('age-months').textContent = fmt(y * 12 + m);
+    $('age-weeks').textContent = fmt(Math.floor(totalDays / 7));
+    $('age-days').textContent = fmt(totalDays);
+    $('age-hours').textContent = fmt(Math.floor(ms / 3600000));
+
+    // next birthday
+    let next = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
+    if (next < now) next = new Date(now.getFullYear() + 1, birth.getMonth(), birth.getDate());
+    const daysToNext = Math.ceil((next.getTime() - now.getTime()) / 86400000);
+    $('age-next').textContent = daysToNext === 0 ? '🎉 Today!' : `${fmt(daysToNext)} day${daysToNext === 1 ? '' : 's'}`;
+  }
+
+  dob.addEventListener('input', run);
+  at.addEventListener('input', run);
+
+  document.querySelectorAll<HTMLButtonElement>('.tw-copy[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const txt = document.getElementById(btn.dataset.copy!)?.textContent ?? '';
+      if (!txt || txt === '—') return;
+      try {
+        await navigator.clipboard.writeText(txt);
+        const old = btn.textContent; btn.textContent = 'Copied!'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = old; btn.classList.remove('copied'); }, 1400);
+      } catch {}
+    });
+  });
+
+  run();
+
+  // Shareable link state (?dob=YYYY-MM-DD)
+  import('../../lib/deeplink').then(({ bindParam }) => bindParam(dob, 'dob'));
+</script>

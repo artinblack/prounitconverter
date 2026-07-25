@@ -1,0 +1,74 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('word-counter')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-field">
+      <label class="tw-label" for="wc-input">Your text</label>
+      <textarea id="wc-input" class="tw-textarea" style="min-height:180px;" placeholder="Type or paste your text here…" spellcheck="false"></textarea>
+    </div>
+
+    <div class="wc-stats">
+      <div class="wc-stat"><span class="wc-num" id="wc-words">0</span><span class="wc-label">Words</span></div>
+      <div class="wc-stat"><span class="wc-num" id="wc-chars">0</span><span class="wc-label">Characters</span></div>
+      <div class="wc-stat"><span class="wc-num" id="wc-nospace">0</span><span class="wc-label">No spaces</span></div>
+      <div class="wc-stat"><span class="wc-num" id="wc-sentences">0</span><span class="wc-label">Sentences</span></div>
+      <div class="wc-stat"><span class="wc-num" id="wc-paragraphs">0</span><span class="wc-label">Paragraphs</span></div>
+      <div class="wc-stat"><span class="wc-num" id="wc-read">0s</span><span class="wc-label">Reading time</span></div>
+      <div class="wc-stat"><span class="wc-num" id="wc-speak">0s</span><span class="wc-label">Speaking time</span></div>
+    </div>
+  </div>
+</ToolLayout>
+
+<style>
+  .wc-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--sp-sm);
+  }
+  @media (max-width: 640px) { .wc-stats { grid-template-columns: repeat(2, 1fr); } }
+  .wc-stat {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: var(--sp-md);
+    background: var(--color-canvas-soft);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--rounded-sm);
+  }
+  .wc-num { font-size: 22px; font-weight: 700; color: var(--color-ink); font-variant-numeric: tabular-nums; }
+  .wc-label { font-size: 12px; color: var(--color-ink-mute); text-transform: uppercase; letter-spacing: 0.04em; }
+</style>
+
+<script>
+  const $ = (id: string) => document.getElementById(id) as HTMLElement;
+  const input = document.getElementById('wc-input') as HTMLTextAreaElement;
+
+  function fmtTime(seconds: number): string {
+    if (seconds < 60) return `${Math.max(0, Math.round(seconds))}s`;
+    const m = Math.floor(seconds / 60);
+    const s = Math.round(seconds % 60);
+    return s ? `${m}m ${s}s` : `${m}m`;
+  }
+
+  function run() {
+    const text = input.value;
+    const words = (text.trim().match(/\S+/g) || []).length;
+    const chars = text.length;
+    const noSpace = text.replace(/\s/g, '').length;
+    const sentences = (text.match(/[^.!?]+[.!?]+(\s|$)/g) || []).length || (text.trim() ? 1 : 0);
+    const paragraphs = text.split(/\n{1,}/).filter(p => p.trim().length > 0).length;
+
+    ($('wc-words')).textContent = words.toLocaleString('en-US');
+    ($('wc-chars')).textContent = chars.toLocaleString('en-US');
+    ($('wc-nospace')).textContent = noSpace.toLocaleString('en-US');
+    ($('wc-sentences')).textContent = sentences.toLocaleString('en-US');
+    ($('wc-paragraphs')).textContent = paragraphs.toLocaleString('en-US');
+    ($('wc-read')).textContent = fmtTime(words / 200 * 60);   // ~200 wpm reading
+    ($('wc-speak')).textContent = fmtTime(words / 130 * 60);  // ~130 wpm speaking
+  }
+
+  input.addEventListener('input', run);
+  run();
+</script>

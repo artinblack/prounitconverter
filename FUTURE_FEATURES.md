@@ -28,12 +28,10 @@ programmatic "value" pages (thousands of near-identical URLs) can read as thin c
 crawl budget on a young site. So the order below front-loads **distinct, high-quality pages** and
 rolls out the programmatic engine **curated-first**, expanding only once indexing/authority is proven.
 
-1. **Ship + index Density/Fuel** _(built — pending commit/deploy)_. Add the two hubs + top pairs to
-   `INDEXING_URLS.md`; the rest ride the sitemap.
-2. **Net-new high-search tools** _(fast, distinct, ideal for a young domain)_ — **Age Calculator,
-   BMI Calculator, Word/Character Counter**. All ★ native, all were validated in the ideation sheet.
-   → moves items out of section A.
-3. **Printable conversion charts** — biggest bet #2. High-quality, link-worthy, long dwell. `/charts/[pair]`.
+1. ✅ **Ship + index Density/Fuel** _(shipped 2026-07-25)_. Hubs + top pairs added to `INDEXING_URLS.md`.
+2. ✅ **Net-new high-search tools** _(shipped 2026-07-25)_ — **Age Calculator, BMI Calculator,
+   Word/Character Counter** now live at `/tools/*` (20 tools total).
+3. **Printable conversion charts** — biggest bet #2. High-quality, link-worthy, long dwell. `/charts/[pair]`. ← **next**
 4. **Specific-value pages — curated & quality-first** — biggest bet #1, but **start small**: top
    ~20 pairs × ~15 values (~300 genuinely useful pages, each with a unique answer + mini chart +
    context), submitted via sitemap + IndexNow. Expand only after these index and rank.

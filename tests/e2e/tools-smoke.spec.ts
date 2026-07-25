@@ -141,6 +141,43 @@ test.describe('Tools batch 2 — pages load & compute', () => {
   });
 });
 
+test.describe('Tools batch 3 — pages load & compute', () => {
+  const slugs = ['age-calculator', 'bmi-calculator', 'word-counter'];
+
+  for (const s of slugs) {
+    test(`${s} loads with h1 and no console errors`, async ({ page }) => {
+      const errors: string[] = [];
+      page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+      await page.goto(`/tools/${s}`);
+      await expect(page.locator('h1')).toBeVisible();
+      expect(errors.filter(e => !/favicon|adsbygoogle|gtag|analytics/i.test(e))).toEqual([]);
+    });
+  }
+
+  test('age: known DOB gives a non-empty age', async ({ page }) => {
+    await page.goto('/tools/age-calculator');
+    await page.fill('#age-dob', '2000-01-01');
+    await page.fill('#age-at', '2020-01-01');
+    await expect(page.locator('#age-main')).toHaveText('20 years, 0 months, 0 days');
+    await expect(page.locator('#age-days')).toHaveText('7,305'); // includes 5 leap days
+  });
+
+  test('bmi: 175cm / 70kg → 22.9 Normal', async ({ page }) => {
+    await page.goto('/tools/bmi-calculator');
+    await page.fill('#bmi-cm', '175');
+    await page.fill('#bmi-kg', '70');
+    await expect(page.locator('#bmi-value')).toHaveText('22.9');
+    await expect(page.locator('#bmi-cat')).toHaveText('Normal');
+  });
+
+  test('word counter: counts words and characters', async ({ page }) => {
+    await page.goto('/tools/word-counter');
+    await page.fill('#wc-input', 'Hello world foo');
+    await expect(page.locator('#wc-words')).toHaveText('3');
+    await expect(page.locator('#wc-chars')).toHaveText('15');
+  });
+});
+
 test.describe('Tools — polish (deep-link, recent, OG)', () => {
   test('deep-link: ?hex=00FF00 preloads the color converter', async ({ page }) => {
     await page.goto('/tools/color-converter?hex=00FF00');

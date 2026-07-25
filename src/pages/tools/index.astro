@@ -5,7 +5,7 @@ import { tools } from '../../lib/tools';
 const siteUrl = 'https://prounitconverter.com';
 const pageUrl = `${siteUrl}/tools`;
 
-const groupOrder = ['Text', 'Color', 'Design', 'Numbers', 'Time', 'Developer'] as const;
+const groupOrder = ['Text', 'Color', 'Design', 'Numbers', 'Time', 'Health', 'Developer'] as const;
 const grouped = groupOrder
   .map(g => ({ group: g, items: tools.filter(t => t.group === g) }))
   .filter(g => g.items.length > 0);
