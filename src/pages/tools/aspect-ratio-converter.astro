@@ -86,4 +86,7 @@ const tool = toolMap.get('aspect-ratio-converter')!;
   });
 
   updateRatio();
+
+  // Shareable link state (?w=&h=)
+  import('../../lib/deeplink').then(({ bindParams }) => bindParams([[w, 'w'], [h, 'h']]));
 </script>

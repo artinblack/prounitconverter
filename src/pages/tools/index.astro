@@ -51,6 +51,7 @@ const schemas = [
   canonical={pageUrl}
   schemas={schemas}
   keywords="online tools, free converter tools, color converter, text case converter, timestamp converter, base64, roman numeral converter, aspect ratio calculator"
+  ogImage={`${siteUrl}/og/tools.png`}
 >
   <nav aria-label="Breadcrumb" class="breadcrumb-bar">
     <div class="container">
@@ -72,6 +73,14 @@ const schemas = [
           Fast, private, and free, alongside our unit converters.
         </p>
       </div>
+    </div>
+  </section>
+
+  <!-- Recently used (client-rendered from localStorage) -->
+  <section class="section-sm" id="recent-tools-section" hidden>
+    <div class="container">
+      <h2 class="heading-md" style="margin-bottom: var(--sp-lg);">Recently used</h2>
+      <div class="tools-grid" id="recent-tools-grid"></div>
     </div>
   </section>
 
@@ -174,4 +183,30 @@ const schemas = [
       if (!isOpen) { item.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
     });
   });
+
+  // Recently used tools — read from localStorage (written by ToolLayout on each visit)
+  (function renderRecent() {
+    const section = document.getElementById('recent-tools-section');
+    const grid = document.getElementById('recent-tools-grid');
+    if (!section || !grid) return;
+    let list: Array<{ slug: string; name: string; icon: string }> = [];
+    try { list = JSON.parse(localStorage.getItem('uc_recent_tools') || '[]'); } catch {}
+    list = list.filter(t => t && typeof t.slug === 'string' && /^[a-z0-9-]+$/.test(t.slug));
+    if (!list.length) return;
+    section.removeAttribute('hidden');
+    for (const t of list.slice(0, 6)) {
+      const a = document.createElement('a');
+      a.href = `/tools/${t.slug}`;
+      a.className = 'tool-card card';
+      const icon = document.createElement('span');
+      icon.className = 'tool-card-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = t.icon || '🧰';
+      const name = document.createElement('span');
+      name.className = 'tool-card-name';
+      name.textContent = t.name || t.slug;
+      a.append(icon, name);
+      grid.appendChild(a);
+    }
+  })();
 </script>

@@ -78,4 +78,7 @@ const tool = toolMap.get('scientific-notation-converter')!;
   });
 
   run();
+
+  // Shareable link state (?n=…)
+  import('../../lib/deeplink').then(({ bindParam }) => bindParam(input, 'n'));
 </script>

@@ -13,6 +13,7 @@
     "test": "playwright test",
     "test:report": "playwright show-report",
     "check:deploy": "astro build && playwright test --config=playwright.preview.config.ts",
+    "gen:og": "node scripts/gen-og.mjs",
     "deploy": "astro build && npx wrangler deploy"
   },
   "dependencies": {

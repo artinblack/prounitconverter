@@ -140,3 +140,30 @@ test.describe('Tools batch 2 — pages load & compute', () => {
     await expect(page.locator('#sg-out')).toHaveText('my-first-blog-post');
   });
 });
+
+test.describe('Tools — polish (deep-link, recent, OG)', () => {
+  test('deep-link: ?hex=00FF00 preloads the color converter', async ({ page }) => {
+    await page.goto('/tools/color-converter?hex=00FF00');
+    await expect(page.locator('#out-rgb')).toHaveText('rgb(0, 255, 0)');
+  });
+
+  test('deep-link: editing updates the URL query param', async ({ page }) => {
+    await page.goto('/tools/slug-generator');
+    await page.fill('#sg-input', 'Hello World');
+    await expect(page).toHaveURL(/[?&]text=Hello(\+|%20)World/);
+  });
+
+  test('recently-used: visiting a tool then the hub shows it', async ({ page }) => {
+    await page.goto('/tools/base64-converter');
+    await page.goto('/tools');
+    const recent = page.locator('#recent-tools-section');
+    await expect(recent).toBeVisible();
+    await expect(recent.locator('a[href="/tools/base64-converter"]')).toBeVisible();
+  });
+
+  test('per-tool OG image is wired into meta tags', async ({ page }) => {
+    await page.goto('/tools/color-converter');
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      'content', 'https://prounitconverter.com/og/color-converter.png');
+  });
+});

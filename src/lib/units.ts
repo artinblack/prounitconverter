@@ -435,6 +435,22 @@ export const categories: Category[] = [
   },
 ];
 
+// ─── Expand commonPairs with the reverse of every pair ───────
+// People search both directions ("cm to inches" and "inches to cm"),
+// so every A→B pair should also have a B→A landing page. This mints
+// the reverse pages automatically and keeps every consumer (pair
+// pages, category links, header search, sitemap) in sync.
+for (const cat of categories) {
+  const seen = new Set(cat.commonPairs.map(([a, b]) => `${a}>${b}`));
+  const reverses: Array<[string, string]> = [];
+  for (const [a, b] of cat.commonPairs) {
+    if (a === b) continue;
+    const key = `${b}>${a}`;
+    if (!seen.has(key)) { seen.add(key); reverses.push([b, a]); }
+  }
+  cat.commonPairs.push(...reverses);
+}
+
 export const categoryMap = new Map(categories.map(c => [c.id, c]));
 
 // ─── FUEL CONVERSION HELPERS ─────────────────────────────────

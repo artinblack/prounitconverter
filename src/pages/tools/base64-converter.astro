@@ -85,4 +85,7 @@ const tool = toolMap.get('base64-converter')!;
     } catch {}
   });
   clearBtn.addEventListener('click', () => { input.value = ''; output.value = ''; msg.textContent = ''; input.focus(); });
+
+  // Shareable link state (?text=…)
+  import('../../lib/deeplink').then(({ bindParam }) => bindParam(input, 'text'));
 </script>

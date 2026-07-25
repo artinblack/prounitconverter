@@ -92,4 +92,7 @@ const tool = toolMap.get('slug-generator')!;
   });
 
   run();
+
+  // Shareable link state (?text=…)
+  import('../../lib/deeplink').then(({ bindParam }) => bindParam(input, 'text'));
 </script>

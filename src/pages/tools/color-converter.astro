@@ -161,4 +161,7 @@ const tool = toolMap.get('color-converter')!;
   });
 
   setFromRgb(89, 86, 249);
+
+  // Shareable link state (?hex=…)
+  import('../../lib/deeplink').then(({ bindParam }) => bindParam(hexIn, 'hex'));
 </script>

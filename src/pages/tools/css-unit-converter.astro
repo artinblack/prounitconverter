@@ -85,4 +85,7 @@ const tool = toolMap.get('css-unit-converter')!;
     // recompute from the px field as the anchor
     recalcFrom($<HTMLInputElement>('css-px'));
   });
+
+  // Shareable link state (?px=…)
+  import('../../lib/deeplink').then(({ bindParam }) => bindParam($<HTMLInputElement>('css-px'), 'px'));
 </script>

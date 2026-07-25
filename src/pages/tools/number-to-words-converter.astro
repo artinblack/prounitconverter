@@ -105,4 +105,7 @@ const tool = toolMap.get('number-to-words-converter')!;
   });
 
   run();
+
+  // Shareable link state (?n=…)
+  import('../../lib/deeplink').then(({ bindParam }) => bindParam(input, 'n'));
 </script>

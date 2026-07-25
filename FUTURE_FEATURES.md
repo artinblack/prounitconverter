@@ -43,13 +43,22 @@ redirects server-side (browser CORS blocks unshortening arbitrary URLs). Recomme
 
 **Effort:** M–L combined (mostly the Worker + abuse hardening, not the UI).
 
-## B. Cross-cutting polish (small, high-leverage)
+## B. Cross-cutting polish — ✅ shipped 2026-07-25
 
-- **Per-tool OG images** — currently all tools share the global `og-image.png`. Generate a simple
-  branded 1200×630 per tool (or a build-time template) for better social CTR.
-- **"Recently used tools"** — localStorage, mirror the converter Favorites pattern already on the homepage.
-- **Copy-link / deep-link state** — encode tool input in the URL (`?hex=ff0000`) so results are shareable.
-- **Homepage counts** — a few strings still say "14 categories" in the long-form SEO prose; the site
-  has 18. Sweep and update (the visible subtitle is already fixed).
-- **Programmatic converter pages** — expand `commonPairs` in `src/lib/units.ts` to mint more
-  `/convert/x-to-y` long-tail pages (see GROWTH_PRIORITY.md).
+- ✅ **Per-tool OG images** — build-time generator `scripts/gen-og.mjs` (`npm run gen:og`,
+  Playwright → 1200×630 PNGs in `public/og/`); `Layout.astro` gained an `ogImage` prop and
+  every tool + the hub now sets its own. Runtime stays fully static.
+- ✅ **"Recently used tools"** — `ToolLayout` records each visit to `localStorage`
+  (`uc_recent_tools`); the hub renders a "Recently used" row when present.
+- ✅ **Copy-link / deep-link state** — shared `src/lib/deeplink.ts` (`bindParam`) syncs a tool's
+  primary input with a URL query param (`?hex=…`, `?text=…`, `?n=…`, …). Wired into 14 tools;
+  GPA and Time Zone were intentionally skipped (multi-field state — future work if wanted).
+- ✅ **Homepage/about counts** — corrected to the real **17** live categories (index + about;
+  removed the non-existent "Density"/"Torque" list entries — those exist only as unit arrays).
+- ✅ **Programmatic converter pages** — `src/lib/units.ts` now auto-adds the reverse of every
+  `commonPair` (+54 pages → 188 pair pages), picked up by pages, links, search, and sitemap.
+
+## C. Remaining polish ideas (optional)
+
+- Deep-link the two skipped tools (GPA rows, Time Zone selections) via encoded multi-field state.
+- Regenerate OG images whenever a tool's name/tagline changes (`npm run gen:og`, then commit PNGs).

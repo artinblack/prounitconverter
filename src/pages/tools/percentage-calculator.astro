@@ -77,4 +77,10 @@ const tool = toolMap.get('percentage-calculator')!;
   ['pc2-a', 'pc2-b'].forEach(id => $<HTMLInputElement>(id).addEventListener('input', run2));
   ['pc3-a', 'pc3-b'].forEach(id => $<HTMLInputElement>(id).addEventListener('input', run3));
   run1(); run2(); run3();
+
+  // Shareable link state for the first calculator (?p=&n=)
+  import('../../lib/deeplink').then(({ bindParams }) => bindParams([
+    [$<HTMLInputElement>('pc1-p'), 'p'],
+    [$<HTMLInputElement>('pc1-n'), 'n'],
+  ]));
 </script>
