@@ -178,6 +178,38 @@ test.describe('Tools batch 3 — pages load & compute', () => {
   });
 });
 
+test.describe('Charts — printable conversion charts', () => {
+  test('charts hub lists chart links', async ({ page }) => {
+    await page.goto('/charts');
+    await expect(page.locator('h1')).toContainText('Conversion Charts');
+    await expect(page.locator('a[href="/charts/cm-to-in"]').first()).toBeVisible();
+    await expect(page.locator('a[href="/charts/kg-to-lb"]').first()).toBeVisible();
+  });
+
+  test('cm-to-in chart renders a correct table row', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+    await page.goto('/charts/cm-to-in');
+    await expect(page.locator('h1')).toContainText('Centimeter');
+    // 10 cm = 3.937 in — find the row
+    const row = page.locator('.chart-table tbody tr', { hasText: '10 cm' });
+    await expect(row).toContainText('3.937');
+    expect(errors.filter(e => !/favicon|adsbygoogle|gtag|analytics/i.test(e))).toEqual([]);
+  });
+
+  test('kg-to-lb chart: 10 kg → 22.046 lb', async ({ page }) => {
+    await page.goto('/charts/kg-to-lb');
+    const row = page.locator('.chart-table tbody tr', { hasText: '10 kg' });
+    await expect(row).toContainText('22.046');
+  });
+
+  test('chart page has a print button and converter link', async ({ page }) => {
+    await page.goto('/charts/c-to-f');
+    await expect(page.locator('#print-btn')).toBeVisible();
+    await expect(page.locator('a[href="/convert/c-to-f"]')).toBeVisible();
+  });
+});
+
 test.describe('Tools — polish (deep-link, recent, OG)', () => {
   test('deep-link: ?hex=00FF00 preloads the color converter', async ({ page }) => {
     await page.goto('/tools/color-converter?hex=00FF00');

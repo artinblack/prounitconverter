@@ -1221,3 +1221,15 @@ select.input {
 }
 .tw-error { color: #dc2626; }
 
+
+/* ============================================================
+   PRINT — used by /charts/* printable pages
+   ============================================================ */
+@media print {
+  .site-header,
+  .site-footer,
+  .no-print,
+  ins.adsbygoogle { display: none !important; }
+  body { background: #fff; }
+  main { padding: 0; }
+}

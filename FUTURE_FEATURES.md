@@ -31,10 +31,11 @@ rolls out the programmatic engine **curated-first**, expanding only once indexin
 1. ✅ **Ship + index Density/Fuel** _(shipped 2026-07-25)_. Hubs + top pairs added to `INDEXING_URLS.md`.
 2. ✅ **Net-new high-search tools** _(shipped 2026-07-25)_ — **Age Calculator, BMI Calculator,
    Word/Character Counter** now live at `/tools/*` (20 tools total).
-3. **Printable conversion charts** — biggest bet #2. High-quality, link-worthy, long dwell. `/charts/[pair]`. ← **next**
+3. ✅ **Printable conversion charts** _(shipped 2026-07-25)_ — 29 charts + hub at `/charts/*`,
+   print-optimized, cross-linked from footer, homepage, and each chart's converter.
 4. **Specific-value pages — curated & quality-first** — biggest bet #1, but **start small**: top
    ~20 pairs × ~15 values (~300 genuinely useful pages, each with a unique answer + mini chart +
-   context), submitted via sitemap + IndexNow. Expand only after these index and rank.
+   context), submitted via sitemap + IndexNow. Expand only after these index and rank. ← **next**
 5. **⌘K command palette** — biggest bet #3; engagement/retention once the page inventory is larger.
 
 Everything below is the fuller backlog these draw from.

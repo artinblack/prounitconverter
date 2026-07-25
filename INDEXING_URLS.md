@@ -47,6 +47,16 @@ Hubs (submit first), then a few top pair pages — the rest ride the sitemap.
 - [ ] https://prounitconverter.com/tools/bmi-calculator
 - [ ] https://prounitconverter.com/tools/word-counter
 
+## Batch 5 — printable charts (hub + top pages; rest via sitemap)
+- [ ] https://prounitconverter.com/charts
+- [ ] https://prounitconverter.com/charts/cm-to-in
+- [ ] https://prounitconverter.com/charts/kg-to-lb
+- [ ] https://prounitconverter.com/charts/c-to-f
+- [ ] https://prounitconverter.com/charts/mm-to-in
+- [ ] https://prounitconverter.com/charts/l-to-gal
+
+_(29 chart pages total — submit the hub + these marquee ones manually; the rest ride the sitemap.)_
+
 ---
 
 ## Strategy as the site scales (read this)

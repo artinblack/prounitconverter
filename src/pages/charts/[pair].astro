@@ -1,0 +1,206 @@
+---
+import Layout from '../../components/Layout.astro';
+import { charts, chartSlug, DEFAULT_VALUES, type ChartDef } from '../../lib/charts';
+import { categoryMap, convert, formatResult, getFormula, type Unit } from '../../lib/units';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const c of charts) {
+    const cat = categoryMap.get(c.category);
+    if (!cat) continue;
+    const from = cat.units.find(u => u.id === c.from);
+    const to = cat.units.find(u => u.id === c.to);
+    if (!from || !to) continue;
+    paths.push({ params: { pair: chartSlug(c) }, props: { chart: c, from, to, categoryName: cat.name } });
+  }
+  return paths;
+}
+
+interface Props { chart: ChartDef; from: Unit; to: Unit; categoryName: string; }
+const { chart, from, to, categoryName } = Astro.props as Props;
+
+const siteUrl = 'https://prounitconverter.com';
+const slug = chartSlug(chart);
+const pageUrl = `${siteUrl}/charts/${slug}`;
+const converterUrl = `/convert/${slug}`;
+
+const values = chart.values ?? DEFAULT_VALUES;
+const rows = values.map(v => ({ v, r: formatResult(convert(v, from, to, chart.category)) }));
+
+const title = `${from.name} to ${to.name} Conversion Chart (Printable)`;
+const h1 = `${from.name} to ${to.name} Chart`;
+const description = `Printable ${from.name.toLowerCase()} to ${to.name.toLowerCase()} conversion chart. Quick-reference table for converting ${from.symbol} to ${to.symbol}, with the formula. Free, no sign-up.`;
+const keywords = `${from.name.toLowerCase()} to ${to.name.toLowerCase()} chart, ${from.symbol} to ${to.symbol} chart, ${from.name.toLowerCase()} to ${to.name.toLowerCase()} conversion table, printable ${from.name.toLowerCase()} ${to.name.toLowerCase()} chart`;
+
+const oneFormula = getFormula(1, from, to, chart.category, convert(1, from, to, chart.category));
+const sample = rows.find(r => r.v === 10) ?? rows[Math.min(9, rows.length - 1)];
+
+// Sibling charts in the same category (for internal linking)
+const siblings = charts
+  .filter(c => c.category === chart.category && chartSlug(c) !== slug)
+  .slice(0, 6);
+const siblingUnits = (c: ChartDef) => {
+  const cat = categoryMap.get(c.category)!;
+  return {
+    slug: chartSlug(c),
+    label: `${cat.units.find(u => u.id === c.from)?.name} to ${cat.units.find(u => u.id === c.to)?.name}`,
+  };
+};
+
+const faqs = [
+  { q: `How do I convert ${from.name.toLowerCase()} to ${to.name.toLowerCase()}?`, a: `${oneFormula}. Multiply your ${from.name.toLowerCase()} value using the formula, or read the answer straight from the chart above.` },
+  { q: `How many ${to.name.toLowerCase()} are in ${sample.v} ${from.name.toLowerCase()}?`, a: `${sample.v} ${from.symbol} = ${sample.r} ${to.symbol}. The full chart lists many more values you can look up at a glance.` },
+  { q: `Can I print this ${from.name.toLowerCase()} to ${to.name.toLowerCase()} chart?`, a: `Yes. Click the “Print chart” button and your browser prints a clean, ad-free table with just the conversion chart — handy to pin up in a kitchen, workshop, or classroom.` },
+  { q: `Do you have an interactive ${from.name.toLowerCase()} to ${to.name.toLowerCase()} converter?`, a: `Yes — use our live ${from.name} to ${to.name} converter for any value with the formula shown, then come back here for the printable quick-reference chart.` },
+];
+
+const schemas = [
+  {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Charts', item: `${siteUrl}/charts` },
+      { '@type': 'ListItem', position: 3, name: `${from.name} to ${to.name} Chart`, item: pageUrl },
+    ],
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'FAQPage',
+    mainEntity: faqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+];
+---
+
+<Layout title={title} description={description} canonical={pageUrl} schemas={schemas} keywords={keywords} ogTitle={title}>
+  <nav aria-label="Breadcrumb" class="breadcrumb-bar no-print">
+    <div class="container">
+      <ol class="breadcrumb-list">
+        <li><a href="/">Home</a></li>
+        <li aria-hidden="true" class="breadcrumb-sep">›</li>
+        <li><a href="/charts">Charts</a></li>
+        <li aria-hidden="true" class="breadcrumb-sep">›</li>
+        <li><span>{from.name} to {to.name}</span></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section class="chart-hero hero-mesh no-print">
+    <div class="container">
+      <h1 class="display-lg">{h1}</h1>
+      <p class="body-lg" style="color:var(--color-ink-2);max-width:640px;">{description}</p>
+      <div class="chart-actions">
+        <button class="btn btn-primary btn-sm" id="print-btn">🖨 Print chart</button>
+        <a href={converterUrl} class="btn btn-secondary btn-sm">Open interactive converter →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-sm">
+    <div class="container chart-narrow">
+      <div class="print-head" hidden>
+        <h2>{from.name} to {to.name} Conversion Chart</h2>
+        <p>1 {from.symbol} = {formatResult(convert(1, from, to, chart.category))} {to.symbol} · prounitconverter.com</p>
+      </div>
+
+      <table class="chart-table">
+        <thead>
+          <tr><th>{from.name} ({from.symbol})</th><th>{to.name} ({to.symbol})</th></tr>
+        </thead>
+        <tbody>
+          {rows.map(row => (
+            <tr>
+              <td>{row.v} {from.symbol}</td>
+              <td>{row.r} {to.symbol}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <p class="chart-formula no-print">
+        <strong>Formula:</strong> {oneFormula}
+      </p>
+    </div>
+  </section>
+
+  <section class="section no-print" style="border-top:1px solid var(--color-hairline);">
+    <div class="container chart-narrow">
+      <h2 class="heading-md" style="margin-bottom:var(--sp-lg);">Frequently asked questions</h2>
+      <div class="faq-list">
+        {faqs.map((faq, i) => (
+          <div class="faq-item" id={`chart-faq-${i}`}>
+            <button class="faq-question" aria-expanded="false" aria-controls={`chart-faq-answer-${i}`}>
+              {faq.q}
+              <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <div class="faq-answer" id={`chart-faq-answer-${i}`} role="region"><p>{faq.a}</p></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {siblings.length > 0 && (
+    <section class="section-sm no-print">
+      <div class="container">
+        <h2 class="heading-sm" style="color:var(--color-ink-mute);margin-bottom:var(--sp-lg);text-transform:uppercase;letter-spacing:0.05em;font-size:11px;font-weight:600;">More {categoryName} charts</h2>
+        <div class="other-cats">
+          {siblings.map(s => { const u = siblingUnits(s); return (<a href={`/charts/${u.slug}`} class="other-cat-link">{u.label}</a>); })}
+          <a href="/charts" class="other-cat-link">📋 All charts</a>
+        </div>
+      </div>
+    </section>
+  )}
+</Layout>
+
+<style>
+  .chart-hero { padding: var(--sp-xxl) 0; }
+  .chart-hero h1 { color: var(--color-ink); margin-bottom: var(--sp-sm); }
+  .chart-actions { display: flex; gap: var(--sp-sm); flex-wrap: wrap; margin-top: var(--sp-lg); }
+  .chart-narrow { max-width: 640px; }
+
+  .chart-table {
+    width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums;
+    border: 1px solid var(--color-hairline); border-radius: var(--rounded-md); overflow: hidden;
+  }
+  .chart-table th {
+    text-align: left; font-size: 13px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--color-ink-mute);
+    background: var(--color-canvas-soft); padding: 10px 16px; border-bottom: 1px solid var(--color-hairline);
+  }
+  .chart-table td { padding: 9px 16px; font-size: 15px; color: var(--color-ink); border-bottom: 1px solid var(--color-hairline); }
+  .chart-table tbody tr:last-child td { border-bottom: none; }
+  .chart-table tbody tr:nth-child(even) { background: var(--color-canvas-soft); }
+
+  .chart-formula { margin-top: var(--sp-lg); font-size: 14px; color: var(--color-ink-2); }
+  .chart-formula strong { color: var(--color-ink); }
+
+  .other-cats { display: flex; flex-wrap: wrap; gap: var(--sp-sm); }
+  .other-cat-link {
+    display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px;
+    border-radius: var(--rounded-pill); font-size: 13px; color: var(--color-ink-2);
+    border: 1px solid var(--color-hairline); text-decoration: none;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .other-cat-link:hover { border-color: var(--color-primary-subtle); color: var(--color-primary); background: var(--color-canvas-soft); text-decoration: none; }
+
+  .print-head { text-align: center; margin-bottom: var(--sp-lg); }
+  .print-head h2 { font-size: 20px; color: var(--color-ink); }
+  .print-head p { font-size: 13px; color: var(--color-ink-mute); }
+
+  @media print {
+    .print-head { display: block !important; }
+    .chart-narrow { max-width: 100%; }
+    .chart-table { font-size: 12px; }
+  }
+</style>
+
+<script>
+  document.getElementById('print-btn')?.addEventListener('click', () => window.print());
+  document.querySelectorAll<HTMLButtonElement>('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item')!;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(el => { el.classList.remove('open'); el.querySelector('.faq-question')?.setAttribute('aria-expanded', 'false'); });
+      if (!isOpen) { item.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+    });
+  });
+</script>
