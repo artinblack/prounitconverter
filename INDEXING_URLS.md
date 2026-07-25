@@ -2,10 +2,11 @@
 
 _Last updated: 2026-07-25_
 
-18 new URLs to submit via **URL Inspection → Request Indexing** in Google Search Console.
+High-value URLs to submit via **URL Inspection → Request Indexing** in Google Search Console.
 These match the `<link rel="canonical">` on each page (no trailing slash — paste exactly).
 
-Google caps manual requests at **~10–12/day**, so do the hub + Batch 1 on day 1, Batch 2 on day 2.
+Google caps manual requests at **~10–12/day**, so spread them: Batch 1 day 1, Batch 2 day 2,
+Batch 3 day 3. Everything else rides the sitemap (see "Strategy as the site scales" below).
 
 ## Hub (submit first)
 - [ ] https://prounitconverter.com/tools
@@ -31,7 +32,27 @@ Google caps manual requests at **~10–12/day**, so do the hub + Batch 1 on day 
 - [ ] https://prounitconverter.com/tools/morse-code-translator
 - [ ] https://prounitconverter.com/tools/slug-generator
 
+## Batch 3 — new Density + Fuel categories (after deploy)
+Hubs (submit first), then a few top pair pages — the rest ride the sitemap.
+- [ ] https://prounitconverter.com/convert/density
+- [ ] https://prounitconverter.com/convert/fuel
+- [ ] https://prounitconverter.com/convert/kgm3-to-gcm3
+- [ ] https://prounitconverter.com/convert/kgm3-to-lbft3
+- [ ] https://prounitconverter.com/convert/mpg-to-l100km
+- [ ] https://prounitconverter.com/convert/l100km-to-mpg
+- [ ] https://prounitconverter.com/convert/mpg-to-kml
+
 ---
+
+## Strategy as the site scales (read this)
+Manual Request-Indexing is only worth it for **hubs and a handful of top pages** — it's capped at
+~10–12/day and doesn't scale. Everything else (all pair pages, and the upcoming **charts** and
+**curated specific-value pages**) should be indexed via **sitemap + IndexNow**, not by hand.
+
+- **Manual (this checklist):** the tool hubs + Density/Fuel hubs + a few marquee pair pages.
+- **Automatic (bulk):** the sitemap already lists **~415 URLs** and regenerates on every build;
+  IndexNow auto-pings on change. Do **not** try to hand-submit programmatic pages — let the
+  sitemap do it, and watch the GSC **Pages** report for coverage.
 
 ## How to submit (manual, per URL)
 1. In GSC, paste a URL into the **top search bar** (URL Inspection).

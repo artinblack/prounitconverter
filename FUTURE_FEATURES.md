@@ -4,7 +4,8 @@ _Last updated: 2026-07-25_
 
 ## Shipped so far
 
-- **17 unit-converter categories** at `/convert/*` + **188 pair pages** (auto reverse-paired).
+- **19 unit-converter categories** at `/convert/*` (Density + Fuel Economy now live) +
+  **~205 pair pages** (auto reverse-paired). Category count is dynamic (`categories.length`).
 - **17 converter/utility tools** at `/tools/*`:
   - _Batch 1:_ Text Case, Hex/RGB Color, Aspect Ratio, Roman Numeral, Number-to-Words,
     Unix Timestamp, Time Zone, Base64, Text↔Binary.
@@ -20,16 +21,36 @@ separate tool/project since it needs its own backend, storage, and abuse hardeni
 
 ---
 
-# 🎯 Biggest bets — start here
+# ⏭️ Next up — recommended build order
 
-These four have the highest ROI for a converter site and fit the static stack.
+**Domain-age caveat (important):** prounitconverter.com is ~1 week old with low authority. Mass
+programmatic "value" pages (thousands of near-identical URLs) can read as thin content and dilute
+crawl budget on a young site. So the order below front-loads **distinct, high-quality pages** and
+rolls out the programmatic engine **curated-first**, expanding only once indexing/authority is proven.
 
-| Bet | Why it's huge | Effort |
+1. **Ship + index Density/Fuel** _(built — pending commit/deploy)_. Add the two hubs + top pairs to
+   `INDEXING_URLS.md`; the rest ride the sitemap.
+2. **Net-new high-search tools** _(fast, distinct, ideal for a young domain)_ — **Age Calculator,
+   BMI Calculator, Word/Character Counter**. All ★ native, all were validated in the ideation sheet.
+   → moves items out of section A.
+3. **Printable conversion charts** — biggest bet #2. High-quality, link-worthy, long dwell. `/charts/[pair]`.
+4. **Specific-value pages — curated & quality-first** — biggest bet #1, but **start small**: top
+   ~20 pairs × ~15 values (~300 genuinely useful pages, each with a unique answer + mini chart +
+   context), submitted via sitemap + IndexNow. Expand only after these index and rank.
+5. **⌘K command palette** — biggest bet #3; engagement/retention once the page inventory is larger.
+
+Everything below is the fuller backlog these draw from.
+
+---
+
+# 🎯 Biggest bets
+
+| Bet | Why it's huge | Status |
 |-----|---------------|--------|
-| **1. Specific-value pages** — `/convert/100-cm-to-inches`, `/convert/350-f-to-c` | Google surfaces these as featured snippets. Nearly infinite long-tail, generated programmatically from existing pair data + a curated value list. THE growth engine for a converter site. | M (one dynamic route + a values list) |
-| **2. Printable conversion charts** — "cm to inches chart", "kg to lbs chart", "oven temp chart" | High volume, low competition, long dwell time (great AdSense), printable/PDF, naturally link-worthy. Generated from `units.ts`. | S–M |
-| **3. Global ⌘K command palette** — fuzzy search across every converter, pair, and tool | Big UX win → more pages/session, lower bounce. Pure client-side over the data you already export. | M |
-| **4. Expose `density` + `fuel` as live categories** | Both unit arrays are **already coded** in `units.ts` but not in the `categories` list — flipping them on mints two full converter categories + pair pages for near-zero effort. | XS |
+| **1. Specific-value pages** — `/convert/100-cm-to-inches` | Featured-snippet long-tail engine. | Queued (Next-up #4, curated-first) |
+| **2. Printable conversion charts** | High volume, low competition, long dwell. | Queued (Next-up #3) |
+| **3. Global ⌘K command palette** | More pages/session, lower bounce. | Queued (Next-up #5) |
+| **4. Expose `density` + `fuel`** | Two full categories for near-zero effort. | ✅ **Shipped 2026-07-25** |
 
 ---
 

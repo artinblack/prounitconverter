@@ -423,6 +423,28 @@ export const categories: Category[] = [
     ],
   },
   {
+    id: 'density', name: 'Density', icon: '🧪',
+    description: 'Convert kg/m³, g/cm³, g/L, kg/L, lb/ft³, lb/in³, and more density units.',
+    units: densityUnits, defaultFrom: 'kgm3', defaultTo: 'gcm3',
+    commonPairs: [['kgm3','gcm3'],['kgm3','lbft3'],['gcm3','lbft3'],['kgm3','gl'],['gcm3','kgl'],['lbin3','kgm3']],
+    faqs: [
+      { q: 'How do I convert kg/m³ to g/cm³?', a: 'Divide by 1,000. For example, 1,000 kg/m³ = 1 g/cm³ — the density of water.' },
+      { q: 'What is the density of water?', a: 'Pure water at 4 °C is 1,000 kg/m³, which equals 1 g/cm³, 1 kg/L, or about 62.43 lb/ft³.' },
+      { q: 'How do I convert lb/ft³ to kg/m³?', a: 'Multiply by 16.0185. For example, 62.43 lb/ft³ × 16.0185 ≈ 1,000 kg/m³.' },
+    ],
+  },
+  {
+    id: 'fuel', name: 'Fuel Economy', icon: '⛽',
+    description: 'Convert MPG (US and UK), liters per 100 km (L/100km), and km/L fuel consumption.',
+    units: fuelUnits, defaultFrom: 'mpg', defaultTo: 'l100km',
+    commonPairs: [['mpg','l100km'],['mpg','kml'],['l100km','kml'],['mpguk','l100km'],['mpg','mpguk']],
+    faqs: [
+      { q: 'How do I convert MPG to L/100km?', a: 'Divide 235.214 by the MPG value. For example, 30 mpg = 235.214 ÷ 30 ≈ 7.84 L/100km.' },
+      { q: 'Is a higher or lower number better?', a: 'It depends on the unit. For MPG and km/L, higher is more efficient. For L/100km, lower is more efficient.' },
+      { q: 'Why are UK MPG figures higher than US MPG?', a: 'The UK imperial gallon (4.546 L) is larger than the US gallon (3.785 L), so the same car shows a higher MPG number in UK units.' },
+    ],
+  },
+  {
     id: 'numbase', name: 'Number Base', icon: '🔢',
     description: 'Convert between decimal, binary, octal, and hexadecimal number systems.',
     units: numbaseUnits, defaultFrom: 'nb_dec', defaultTo: 'nb_bin',
