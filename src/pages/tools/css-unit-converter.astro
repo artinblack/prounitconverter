@@ -1,0 +1,88 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('css-unit-converter')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-field">
+      <label class="tw-label" for="css-base">Root font size (px)</label>
+      <input id="css-base" class="input" type="number" min="1" step="0.1" value="16" style="max-width:160px;" />
+    </div>
+
+    <div class="tw-grid">
+      <div class="tw-field">
+        <label class="tw-label" for="css-px">px</label>
+        <input id="css-px" class="input tw-mono" type="number" step="any" value="16" data-unit="px" />
+      </div>
+      <div class="tw-field">
+        <label class="tw-label" for="css-rem">rem</label>
+        <input id="css-rem" class="input tw-mono" type="number" step="any" value="1" data-unit="rem" />
+      </div>
+      <div class="tw-field">
+        <label class="tw-label" for="css-em">em</label>
+        <input id="css-em" class="input tw-mono" type="number" step="any" value="1" data-unit="em" />
+      </div>
+      <div class="tw-field">
+        <label class="tw-label" for="css-pct">%</label>
+        <input id="css-pct" class="input tw-mono" type="number" step="any" value="100" data-unit="pct" />
+      </div>
+      <div class="tw-field">
+        <label class="tw-label" for="css-pt">pt</label>
+        <input id="css-pt" class="input tw-mono" type="number" step="any" value="12" data-unit="pt" />
+      </div>
+    </div>
+    <p class="tw-note">1in = 96px = 72pt. rem/em/% are relative to the root font size above.</p>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const baseIn = $<HTMLInputElement>('css-base');
+  const fields = Array.from(document.querySelectorAll<HTMLInputElement>('input[data-unit]'));
+  const PT_PER_PX = 72 / 96;
+
+  const round = (n: number) => {
+    if (!isFinite(n)) return 0;
+    return Math.round(n * 1e6) / 1e6;
+  };
+
+  function toPx(value: number, unit: string, base: number): number {
+    switch (unit) {
+      case 'px': return value;
+      case 'rem': return value * base;
+      case 'em': return value * base;
+      case 'pct': return (value / 100) * base;
+      case 'pt': return value / PT_PER_PX;
+      default: return value;
+    }
+  }
+  function fromPx(px: number, unit: string, base: number): number {
+    switch (unit) {
+      case 'px': return px;
+      case 'rem': return base ? px / base : 0;
+      case 'em': return base ? px / base : 0;
+      case 'pct': return base ? (px / base) * 100 : 0;
+      case 'pt': return px * PT_PER_PX;
+      default: return px;
+    }
+  }
+
+  function recalcFrom(source: HTMLInputElement) {
+    const base = parseFloat(baseIn.value) || 16;
+    const val = parseFloat(source.value);
+    if (isNaN(val)) return;
+    const px = toPx(val, source.dataset.unit!, base);
+    for (const f of fields) {
+      if (f === source) continue;
+      f.value = String(round(fromPx(px, f.dataset.unit!, base)));
+    }
+  }
+
+  fields.forEach(f => f.addEventListener('input', () => recalcFrom(f)));
+  baseIn.addEventListener('input', () => {
+    // recompute from the px field as the anchor
+    recalcFrom($<HTMLInputElement>('css-px'));
+  });
+</script>

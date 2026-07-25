@@ -387,6 +387,314 @@ export const tools: Tool[] = [
     related: ['base64-converter', 'color-converter', 'roman-numeral-converter'],
     relatedConvert: { href: '/convert/numbase', label: 'Number Base Converter' },
   },
+
+  // ── CSS UNIT CONVERTER ─────────────────────────────────────
+  {
+    slug: 'css-unit-converter',
+    name: 'CSS Unit Converter',
+    icon: '📏',
+    group: 'Developer',
+    tagline: 'Convert between px, rem, em, %, and pt for CSS layouts.',
+    h1: 'CSS Unit Converter (px, rem, em, %, pt)',
+    seoTitle: 'CSS Unit Converter — px to rem, em, % & pt Online',
+    metaDescription:
+      'Free CSS unit converter. Convert px to rem, rem to px, plus em, percentage and pt, based on a configurable root font size. Perfect for responsive CSS.',
+    keywords:
+      'css unit converter, px to rem, rem to px, px to em, px to pt, css units, rem calculator, responsive font size converter',
+    intro:
+      'The CSS Unit Converter turns pixels into rem, em, percentage and points — and back — using a root font size you control (16px by default). Change any field and the rest update instantly, so you can move between absolute and relative CSS units without doing the maths.',
+    body:
+      'Modern, accessible CSS leans on relative units: rem for scalable typography, em for component-relative spacing, and percentages for fluid layouts. But design tools still hand you pixels. This converter bridges the two — set your base (root) font size, type a value in any unit, and read the equivalents. It uses the standard web relationship where 1in = 96px = 72pt, so pt values line up with print and legacy stylesheets too.',
+    useCases: [
+      'Convert a pixel value from a design mockup into rem for scalable type.',
+      'Work out how many pixels a given rem or em resolves to.',
+      'Set a non-default root font size and see every unit recalculate.',
+      'Translate legacy pt sizes into px/rem for the web.',
+      'Build fluid layouts by checking the % equivalent of a size.',
+    ],
+    howToSteps: [
+      { title: 'Set the root font size', text: 'Enter your base font size (default 16px) — the reference for rem/em/%.' },
+      { title: 'Type a value', text: 'Enter a number in px, rem, em, % or pt.' },
+      { title: 'Read the equivalents', text: 'Every other unit updates instantly; copy the one you need.' },
+    ],
+    faqs: [
+      { q: 'How do I convert px to rem?', a: 'Divide the pixel value by the root font size. With the default 16px root, 24px ÷ 16 = 1.5rem. This converter does it automatically and lets you change the root size.' },
+      { q: 'What is the difference between rem and em?', a: 'rem is always relative to the root (html) font size, so it is predictable. em is relative to the font size of the current element, so it compounds when nested. This tool treats both against your chosen base for a clean comparison.' },
+      { q: 'How are pt and px related on the web?', a: 'On the web 1 inch = 96px = 72pt, so 1pt = 96/72 ≈ 1.333px and 1px = 0.75pt. The converter uses this standard ratio.' },
+      { q: 'Why would I change the root font size?', a: 'Some sites set the html font size to something other than 16px (e.g. 62.5% = 10px) to make rem maths easier. Set that value here to get matching conversions.' },
+    ],
+    related: ['scientific-notation-converter', 'fraction-to-decimal-converter', 'data-transfer-time-calculator'],
+    relatedConvert: { href: '/convert/length', label: 'Length Converter' },
+  },
+
+  // ── DATA-TRANSFER TIME CALCULATOR ──────────────────────────
+  {
+    slug: 'data-transfer-time-calculator',
+    name: 'Download Time Calculator',
+    icon: '📶',
+    group: 'Developer',
+    tagline: 'Estimate how long a file takes to download at a given speed.',
+    h1: 'Download / Data-Transfer Time Calculator',
+    seoTitle: 'Download Time Calculator — File Size ÷ Internet Speed',
+    metaDescription:
+      'Free download time calculator. Enter a file size and your internet speed (Mbps, Gbps or MB/s) to estimate how long a download or transfer will take.',
+    keywords:
+      'download time calculator, data transfer time, file download time, mbps to mb/s, how long to download, bandwidth calculator, transfer time estimate',
+    intro:
+      'The Download Time Calculator estimates how long it takes to move a file of a given size at a given connection speed. Enter the size (KB, MB, GB or TB) and your speed in Mbps, Gbps or MB/s, and it returns the transfer time in hours, minutes and seconds.',
+    body:
+      'Internet speeds are advertised in megabits per second (Mbps) while file sizes are in megabytes (MB) — and there are 8 bits in a byte, which is exactly where most people\'s mental maths goes wrong. This calculator handles the bit/byte conversion for you, so a 5 GB download over a 100 Mbps line correctly comes out to about 6.7 minutes, not 50 seconds. It is handy for planning backups, game installs, video uploads, and migrations.',
+    useCases: [
+      'Estimate how long a large game or OS download will take.',
+      'Plan a cloud backup or file migration window.',
+      'Compare transfer times across broadband tiers before upgrading.',
+      'Convert an advertised Mbps speed into real MB/s throughput.',
+      'Work out upload time for a big video before a deadline.',
+    ],
+    howToSteps: [
+      { title: 'Enter the file size', text: 'Type the size and choose KB, MB, GB or TB.' },
+      { title: 'Enter your speed', text: 'Type your connection speed and pick Mbps, Gbps or MB/s.' },
+      { title: 'Read the time', text: 'The estimated transfer time appears in hours, minutes and seconds.' },
+    ],
+    faqs: [
+      { q: 'Why is my download slower than my Mbps suggests?', a: 'Because 1 byte = 8 bits. A 100 Mbps connection delivers about 12.5 MB/s at best, and real-world overhead (protocol, disk, server limits) makes it slower. This calculator uses the 8-bit conversion so its estimate is realistic.' },
+      { q: 'How long to download 1 GB at 100 Mbps?', a: 'About 80 seconds at the theoretical maximum (1 GB = 8000 megabits ÷ 100 Mbps = 80s). Real transfers take a bit longer due to overhead.' },
+      { q: 'What is the difference between Mbps and MB/s?', a: 'Mbps is megabits per second (network speed); MB/s is megabytes per second (file throughput). 1 MB/s = 8 Mbps. Pick the unit that matches how your speed is quoted.' },
+      { q: 'Does this account for real-world overhead?', a: 'It gives the theoretical best-case time from size and speed. Actual downloads are typically 10–30% slower due to protocol overhead and server/disk limits.' },
+    ],
+    related: ['css-unit-converter', 'percentage-calculator', 'scientific-notation-converter'],
+    relatedConvert: { href: '/convert/digital', label: 'Digital Storage Converter' },
+  },
+
+  // ── PERCENTAGE CALCULATOR ──────────────────────────────────
+  {
+    slug: 'percentage-calculator',
+    name: 'Percentage Calculator',
+    icon: '％',
+    group: 'Numbers',
+    tagline: 'Work out percentages, percentage of a number, and % change.',
+    h1: 'Percentage Calculator',
+    seoTitle: 'Percentage Calculator — % of a Number & Percentage Change',
+    metaDescription:
+      'Free percentage calculator. Find X% of a number, what percent one number is of another, and the percentage increase or decrease between two values. Instant results.',
+    keywords:
+      'percentage calculator, percent of a number, percentage change, percent increase, percentage difference, what percent is x of y, calculate percentage',
+    intro:
+      'The Percentage Calculator answers the three questions people actually ask: "what is X% of Y", "X is what percent of Y", and "what is the percentage increase or decrease from X to Y". Fill in the numbers and each result appears instantly.',
+    body:
+      'Percentages come up constantly — tips, discounts, tax, grades, statistics, and price changes. Rather than remembering which number to divide by, this tool gives you three labelled calculators in one place so you pick the one that matches your question. It handles decimals and negative changes and shows results rounded sensibly.',
+    useCases: [
+      'Calculate a tip, discount, or sales-tax amount.',
+      'Find what percentage a score or subtotal is of a total.',
+      'Measure a percentage increase or decrease between two figures.',
+      'Check a markup or margin quickly.',
+      'Verify a "% off" sale price.',
+    ],
+    howToSteps: [
+      { title: 'Pick your question', text: 'Choose "% of a number", "X is what % of Y", or "% change".' },
+      { title: 'Enter the numbers', text: 'Type the two values for that calculation.' },
+      { title: 'Read the answer', text: 'The result updates instantly as you type.' },
+    ],
+    faqs: [
+      { q: 'How do I find X% of a number?', a: 'Multiply the number by the percentage divided by 100. For example, 20% of 150 = 150 × 0.20 = 30. The first calculator above does this for you.' },
+      { q: 'How do I calculate percentage change?', a: 'Subtract the old value from the new value, divide by the old value, and multiply by 100. From 80 to 100 is (100 − 80) ÷ 80 × 100 = 25% increase.' },
+      { q: 'What percent is one number of another?', a: 'Divide the part by the whole and multiply by 100. 30 out of 150 is 30 ÷ 150 × 100 = 20%.' },
+      { q: 'Can it handle a percentage decrease?', a: 'Yes. If the new value is lower than the old value, the percentage-change result is negative, indicating a decrease.' },
+    ],
+    related: ['fraction-to-decimal-converter', 'gpa-calculator', 'scientific-notation-converter'],
+  },
+
+  // ── GPA CALCULATOR ─────────────────────────────────────────
+  {
+    slug: 'gpa-calculator',
+    name: 'GPA Calculator',
+    icon: '🎓',
+    group: 'Numbers',
+    tagline: 'Calculate your grade point average from letter grades and credits.',
+    h1: 'GPA Calculator',
+    seoTitle: 'GPA Calculator — Grade Point Average from Letter Grades',
+    metaDescription:
+      'Free GPA calculator. Enter your letter grades and credit hours to calculate your weighted grade point average on the standard 4.0 scale. Add or remove courses instantly.',
+    keywords:
+      'gpa calculator, grade point average, college gpa, 4.0 scale, weighted gpa, letter grade to gpa, semester gpa calculator',
+    intro:
+      'The GPA Calculator computes your grade point average on the standard 4.0 scale. Add a row for each course, choose the letter grade and enter the credit hours, and it returns your credit-weighted GPA — updating live as you edit.',
+    body:
+      'GPA is a weighted average: courses worth more credit hours count more toward your final number. This calculator maps letter grades (A, A−, B+, …) to their standard grade points, multiplies by credits, and divides by total credits — the same method registrars use. Use it to project a semester, check whether you will hit a scholarship threshold, or see how one more course could move your average.',
+    useCases: [
+      'Calculate your GPA for a single semester or the whole year.',
+      'See if you will meet a scholarship or Dean\'s List cutoff.',
+      'Project how a target grade in a course affects your average.',
+      'Compare weighted vs unweighted impact of high-credit courses.',
+      'Double-check the GPA printed on your transcript.',
+    ],
+    howToSteps: [
+      { title: 'Add your courses', text: 'Add a row per course with its letter grade and credit hours.' },
+      { title: 'Choose grades', text: 'Pick each letter grade from the dropdown.' },
+      { title: 'Read your GPA', text: 'Your credit-weighted GPA updates automatically.' },
+    ],
+    faqs: [
+      { q: 'How is GPA calculated?', a: 'Multiply each course\'s grade points (A = 4.0, B = 3.0, etc.) by its credit hours, add those up, then divide by the total credit hours. This tool does it automatically as you add courses.' },
+      { q: 'What are the grade points for each letter?', a: 'On the standard scale: A = 4.0, A− = 3.7, B+ = 3.3, B = 3.0, B− = 2.7, C+ = 2.3, C = 2.0, C− = 1.7, D+ = 1.3, D = 1.0, F = 0.0.' },
+      { q: 'What is a weighted GPA?', a: 'A weighted GPA counts courses by their credit hours, so a 4-credit A affects your average more than a 1-credit A. This calculator produces a credit-weighted GPA.' },
+      { q: 'Does this use a 4.0 scale?', a: 'Yes, it uses the common unweighted US 4.0 scale. If your school uses a different scale (e.g. 4.3 or 5.0 for honors), the raw method is the same but the point values differ.' },
+    ],
+    related: ['percentage-calculator', 'fraction-to-decimal-converter', 'scientific-notation-converter'],
+  },
+
+  // ── FRACTION ↔ DECIMAL CONVERTER ───────────────────────────
+  {
+    slug: 'fraction-to-decimal-converter',
+    name: 'Fraction ⇄ Decimal Converter',
+    icon: '½',
+    group: 'Numbers',
+    tagline: 'Convert fractions to decimals and decimals back to simplified fractions.',
+    h1: 'Fraction to Decimal Converter',
+    seoTitle: 'Fraction to Decimal Converter — and Decimal to Fraction',
+    metaDescription:
+      'Free fraction and decimal converter. Convert fractions to decimals (3/4 → 0.75) and decimals to simplified fractions (0.75 → 3/4). Handles mixed numbers.',
+    keywords:
+      'fraction to decimal, decimal to fraction, fraction converter, convert fraction to decimal, mixed number to decimal, simplify fraction, 3/4 as a decimal',
+    intro:
+      'The Fraction ⇄ Decimal Converter goes both ways: type a fraction like 3/4 (or a mixed number like 1 1/2) to get its decimal, or type a decimal like 0.625 to get the simplified fraction. Results are reduced to lowest terms automatically.',
+    body:
+      'Recipes, tape measures, and school maths mix fractions and decimals freely, and switching between them by hand is fiddly. This converter parses proper fractions, improper fractions, and mixed numbers, and reduces any decimal to its simplest exact fraction using the greatest common divisor. It is a quick helper for cooking, woodworking, engineering drawings, and homework.',
+    useCases: [
+      'Convert a measurement like 5/8 inch into a decimal for a caliper.',
+      'Turn a decimal reading back into a fraction for a ruler or recipe.',
+      'Simplify an ugly fraction to lowest terms.',
+      'Handle mixed numbers such as 2 3/4.',
+      'Check maths homework answers both ways.',
+    ],
+    howToSteps: [
+      { title: 'Choose a direction', text: 'Fraction → decimal, or decimal → fraction.' },
+      { title: 'Enter your value', text: 'Type a fraction (e.g. 3/4 or 1 1/2) or a decimal (e.g. 0.75).' },
+      { title: 'Read the result', text: 'The converted, fully-simplified value appears instantly.' },
+    ],
+    faqs: [
+      { q: 'How do I convert a fraction to a decimal?', a: 'Divide the numerator by the denominator. 3/4 = 3 ÷ 4 = 0.75. This converter also handles mixed numbers like 1 1/2 = 1.5.' },
+      { q: 'How do I convert a decimal to a fraction?', a: 'Write the decimal over a power of ten and reduce. 0.75 = 75/100 = 3/4. The converter reduces to lowest terms automatically using the greatest common divisor.' },
+      { q: 'Can it handle mixed numbers?', a: 'Yes. Enter a mixed number with a space, like 2 3/4, and it converts to 2.75 (or the reverse into a mixed/improper fraction).' },
+      { q: 'What about repeating decimals?', a: 'The converter treats your input as a terminating decimal and gives the closest exact fraction for the digits entered. For a repeating decimal, enter more digits for a closer fraction.' },
+    ],
+    related: ['percentage-calculator', 'scientific-notation-converter', 'gpa-calculator'],
+    relatedConvert: { href: '/convert/numbase', label: 'Number Base Converter' },
+  },
+
+  // ── SCIENTIFIC NOTATION CONVERTER ──────────────────────────
+  {
+    slug: 'scientific-notation-converter',
+    name: 'Scientific Notation Converter',
+    icon: '🔬',
+    group: 'Numbers',
+    tagline: 'Convert numbers to and from scientific and E-notation.',
+    h1: 'Scientific Notation Converter',
+    seoTitle: 'Scientific Notation Converter — Standard Form & E-Notation',
+    metaDescription:
+      'Free scientific notation converter. Convert a plain number to scientific notation (a × 10ⁿ) and E-notation, and convert scientific notation back to a decimal number.',
+    keywords:
+      'scientific notation converter, standard form converter, e notation, exponential notation, convert to scientific notation, decimal to scientific notation',
+    intro:
+      'The Scientific Notation Converter rewrites large and small numbers in the compact a × 10ⁿ form (and E-notation), and converts scientific notation back into a plain decimal. Enter 0.00042 to get 4.2 × 10⁻⁴, or enter 6.02e23 to expand it.',
+    body:
+      'Scientific notation keeps very large or very small numbers readable — Avogadro\'s number, wavelengths, distances in space, tiny tolerances. This converter shows the normalized coefficient and exponent, the equivalent E-notation used in code and calculators, and the fully written-out decimal, so you can move between whichever form your work needs.',
+    useCases: [
+      'Express a very large or very small measurement compactly.',
+      'Expand a value like 6.02e23 into its full decimal form.',
+      'Convert calculator/programming E-notation into standard form.',
+      'Normalize a number to a single leading digit × 10ⁿ.',
+      'Check exponents in physics and chemistry problems.',
+    ],
+    howToSteps: [
+      { title: 'Choose a direction', text: 'Number → scientific notation, or scientific → number.' },
+      { title: 'Enter a value', text: 'Type a plain number (0.00042) or scientific form (4.2e-4).' },
+      { title: 'Read every form', text: 'See the a × 10ⁿ form, E-notation, and the full decimal.' },
+    ],
+    faqs: [
+      { q: 'What is scientific notation?', a: 'Scientific notation writes a number as a coefficient between 1 and 10 multiplied by a power of ten, e.g. 4.2 × 10⁻⁴. It makes very large or very small numbers easier to read and compare.' },
+      { q: 'What is E-notation?', a: 'E-notation is how scientific notation is typed on calculators and in code: 4.2 × 10⁻⁴ becomes 4.2e-4. This converter shows both forms.' },
+      { q: 'How do I convert a number to scientific notation?', a: 'Move the decimal point so one non-zero digit remains on the left, and count the moves as the exponent. 5300 = 5.3 × 10³; 0.0071 = 7.1 × 10⁻³. The converter does this automatically.' },
+      { q: 'Does it handle negative numbers?', a: 'Yes. The sign is preserved on the coefficient, so −5300 becomes −5.3 × 10³.' },
+    ],
+    related: ['fraction-to-decimal-converter', 'percentage-calculator', 'css-unit-converter'],
+    relatedConvert: { href: '/convert/numbase', label: 'Number Base Converter' },
+  },
+
+  // ── MORSE CODE TRANSLATOR ──────────────────────────────────
+  {
+    slug: 'morse-code-translator',
+    name: 'Morse Code Translator',
+    icon: '📡',
+    group: 'Text',
+    tagline: 'Translate text to Morse code and decode Morse code back to text.',
+    h1: 'Morse Code Translator',
+    seoTitle: 'Morse Code Translator — Text to Morse Code & Back',
+    metaDescription:
+      'Free Morse code translator. Convert text to Morse code and decode Morse code back into text, with support for letters, numbers and common punctuation.',
+    keywords:
+      'morse code translator, text to morse code, morse code to text, morse code converter, decode morse code, morse code alphabet',
+    intro:
+      'The Morse Code Translator converts plain text into Morse code and decodes Morse back into readable text. It covers the full A–Z alphabet, digits 0–9, and common punctuation, using standard spacing — a space between letters and a slash between words.',
+    body:
+      'Morse code encodes each character as a sequence of dots and dashes, once the backbone of telegraph and radio communication and still used in aviation, amateur radio, and accessibility. This translator makes it two-way: type a message to get its Morse, or paste Morse (dots and dashes, letters separated by spaces, words by "/") to read it back. Great for learning, puzzles, escape rooms, and CTFs.',
+    useCases: [
+      'Encode a message into Morse code for a puzzle or game.',
+      'Decode a Morse string back into plain text.',
+      'Learn the Morse alphabet with instant feedback.',
+      'Create clues for escape rooms or scavenger hunts.',
+      'Solve Morse-based CTF and cipher challenges.',
+    ],
+    howToSteps: [
+      { title: 'Choose a direction', text: 'Text → Morse, or Morse → text.' },
+      { title: 'Type your input', text: 'Enter text, or Morse using . and − with spaces between letters and / between words.' },
+      { title: 'Copy the result', text: 'The translation appears instantly, ready to copy.' },
+    ],
+    faqs: [
+      { q: 'How does Morse code spacing work?', a: 'Within a word, letters are separated by a single space; words are separated by a slash (/) or a longer gap. For example "HI" is "···· ··" and "HI OK" is "···· ·· / −−− −·−".' },
+      { q: 'What is SOS in Morse code?', a: 'SOS is "··· −−− ···" — three dots, three dashes, three dots. It became the international distress signal because the pattern is simple and unmistakable.' },
+      { q: 'Does it support numbers and punctuation?', a: 'Yes. All digits 0–9 and common punctuation such as period, comma, question mark and slash are included in both directions.' },
+      { q: 'What do the dot and dash represent?', a: 'They are the two signal lengths: a dot (·) is a short signal and a dash (−) is a long one (about three times the dot). Their combinations spell each character.' },
+    ],
+    related: ['slug-generator', 'text-case-converter', 'base64-converter'],
+  },
+
+  // ── SLUG GENERATOR ─────────────────────────────────────────
+  {
+    slug: 'slug-generator',
+    name: 'URL Slug Generator',
+    icon: '🔗',
+    group: 'Text',
+    tagline: 'Turn any title into a clean URL slug — case-preserving optional.',
+    h1: 'URL Slug Generator',
+    seoTitle: 'URL Slug Generator — Convert Text to a Clean URL Slug',
+    metaDescription:
+      'Free URL slug generator. Convert any title or text into a clean, SEO-friendly URL slug. Choose hyphen or underscore separators and keep or lowercase the original case.',
+    keywords:
+      'slug generator, url slug generator, text to slug, seo slug, permalink generator, url friendly text, create slug from title',
+    intro:
+      'The URL Slug Generator converts a title or any text into a clean, URL-friendly slug. It strips punctuation, collapses spaces, and joins words with your chosen separator — with an option to keep the original capitalization or force lowercase.',
+    body:
+      'A good slug is the human-readable, SEO-friendly tail of a URL — "my-first-blog-post" instead of "?id=42". This generator handles accented characters, removes symbols that do not belong in URLs, and lets you pick hyphens (the SEO standard) or underscores. The case-preserving toggle is there for systems that are case-sensitive or brand names you want to keep capitalized.',
+    useCases: [
+      'Generate a permalink slug from a blog-post title.',
+      'Create clean, readable URLs for pages and products.',
+      'Make file names or IDs URL-safe.',
+      'Keep original casing for case-sensitive systems, or force lowercase for SEO.',
+      'Batch-clean messy titles into consistent slugs.',
+    ],
+    howToSteps: [
+      { title: 'Enter your text', text: 'Type or paste a title or phrase.' },
+      { title: 'Set options', text: 'Choose a hyphen or underscore separator and whether to keep the case.' },
+      { title: 'Copy the slug', text: 'The URL-safe slug is generated instantly, ready to copy.' },
+    ],
+    faqs: [
+      { q: 'What is a URL slug?', a: 'A slug is the part of a URL that identifies a page in human-readable words, like the "hello-world" in example.com/hello-world. Clean slugs are easier to read and better for SEO.' },
+      { q: 'Should I use hyphens or underscores in slugs?', a: 'Hyphens are the SEO standard — Google treats hyphens as word separators but underscores as joiners. Use hyphens unless a specific system requires underscores.' },
+      { q: 'Why lowercase slugs?', a: 'Lowercase avoids duplicate-URL issues on case-sensitive servers (where /Page and /page differ). The generator lowercases by default, but you can keep the original case if you need it.' },
+      { q: 'Does it handle accented characters?', a: 'Yes. Accented letters are converted to their closest ASCII equivalents (é → e) so the slug stays URL-safe.' },
+    ],
+    related: ['morse-code-translator', 'text-case-converter', 'base64-converter'],
+  },
 ];
 
 export const toolMap = new Map(tools.map(t => [t.slug, t]));

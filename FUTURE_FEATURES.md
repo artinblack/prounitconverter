@@ -2,47 +2,25 @@
 
 _Last updated: 2026-07-25_
 
-This is the running backlog after shipping the first **9 converter tools** under `/tools/`
-(Text Case, Hex/RGB Color, Aspect Ratio, Roman Numeral, Number-to-Words, Unix Timestamp,
-Time Zone, Base64, Text↔Binary).
+Running backlog. **17 converter tools now shipped** under `/tools/`:
+
+- **Batch 1 (9):** Text Case, Hex/RGB Color, Aspect Ratio, Roman Numeral, Number-to-Words,
+  Unix Timestamp, Time Zone, Base64, Text↔Binary.
+- **Batch 2 (8, from former section B):** CSS Unit Converter, Download-Time Calculator,
+  Percentage Calculator, GPA Calculator, Fraction ⇄ Decimal, Scientific Notation, Morse Code
+  Translator, URL Slug Generator.
 
 Everything below is scoped for the current stack: **Astro 6 → Cloudflare static Worker,
 hand-written CSS, zero-dependency client-side JS.** Items needing a backend are flagged.
 
+_(Former section A — the calculators/utilities still sitting in the "UTILITY WEBSITE IDEATION"
+sheet: Age, BMI, Meal Calorie, Readability, Countdown Timer, Dice Roller, Emoji Combiner,
+YouTube Timestamp, Image Cropper, Color Scheme Extractor — was removed from this backlog on
+request. Revisit the sheet directly if/when you want them.)_
+
 ---
 
-## A. Remaining tools from the "UTILITY WEBSITE IDEATION" sheet
-
-These were in the sheet but are **calculators/utilities, not converters**, so they were left
-out of the converter-focused first batch. All are buildable client-side.
-
-| Tool | Effort | Notes |
-|------|--------|-------|
-| Age Calculator | S | Date math; "age from date of birth". Very high search. |
-| BMI Calculator | S | Metric + imperial; formula-based. High search, strong AdSense fit. |
-| Meal Calorie Calculator | M | Mifflin-St Jeor BMR + activity multiplier. |
-| Readability Score Calculator | M | Flesch-Kincaid / Gunning Fog on pasted text. |
-| Online Countdown Timer | M | `setInterval`; shareable via URL query params. |
-| Online Dice Roller | S | RNG; fun/shareable, good for backlinks. |
-| Emoji Combiner | M | Uses Google Emoji Kitchen image endpoints (verify availability/ToS). |
-| YouTube Timestamp Generator | S | Parse a video URL + time → `&t=` deep link. |
-| Image Cropper (Circular) | L | Client `<canvas>` + file upload + PNG download. |
-| Color Scheme Extractor | L | `<canvas>` pixel sampling / median-cut quantization from an uploaded image. |
-
-## B. Net-new converter ideas that fit the brand (not in the sheet)
-
-| Tool | Effort | Why |
-|------|--------|-----|
-| CSS Unit Converter (px ↔ rem ↔ em ↔ %) | S | Developer search; pairs with existing converters. |
-| Bandwidth / Data-transfer time calculator | M | "How long to download X GB at Y Mbps". |
-| Percentage Calculator | S | Enormous evergreen search volume. |
-| GPA / Grade Converter | M | Seasonal student traffic. |
-| Fraction ↔ Decimal Converter | S | High search; complements numbase. |
-| Scientific Notation Converter | S | Education/engineering niche. |
-| Morse Code Translator | S | Fun, shareable, good backlinks. |
-| Case-preserving Slug Generator | S | Extends Text Case Converter. |
-
-## C. Phase-2: URL Shortener + URL Unshortener (needs a backend)
+## A. Phase-2: URL Shortener + URL Unshortener (needs a backend)
 
 These two were **deferred** because a static site cannot store short-links or follow
 redirects server-side (browser CORS blocks unshortening arbitrary URLs). Recommended build:
@@ -65,7 +43,7 @@ redirects server-side (browser CORS blocks unshortening arbitrary URLs). Recomme
 
 **Effort:** M–L combined (mostly the Worker + abuse hardening, not the UI).
 
-## D. Cross-cutting polish (small, high-leverage)
+## B. Cross-cutting polish (small, high-leverage)
 
 - **Per-tool OG images** — currently all tools share the global `og-image.png`. Generate a simple
   branded 1200×630 per tool (or a build-time template) for better social CTR.

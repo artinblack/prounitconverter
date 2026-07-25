@@ -1,0 +1,81 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('scientific-notation-converter')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-field">
+      <label class="tw-label" for="sn-input">Enter a number or scientific notation</label>
+      <input id="sn-input" class="input input-lg tw-mono" type="text" value="0.00042" autocomplete="off" spellcheck="false" placeholder="e.g. 12345 or 4.2e-4" />
+    </div>
+
+    <div class="tw-field" style="gap:8px;">
+      <div class="tw-result"><span class="tw-result-key">Scientific</span><span class="tw-result-val" id="sn-sci">4.2 × 10⁻⁴</span><button class="tw-copy" data-copy="sn-sci">Copy</button></div>
+      <div class="tw-result"><span class="tw-result-key">E-notation</span><span class="tw-result-val" id="sn-e">4.2e-4</span><button class="tw-copy" data-copy="sn-e">Copy</button></div>
+      <div class="tw-result"><span class="tw-result-key">Decimal</span><span class="tw-result-val" id="sn-dec">0.00042</span><button class="tw-copy" data-copy="sn-dec">Copy</button></div>
+    </div>
+    <p class="tw-note tw-error" id="sn-msg"></p>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const input = $<HTMLInputElement>('sn-input');
+  const msg = $('sn-msg');
+
+  const SUP: Record<string, string> = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  const sup = (n: number) => String(n).split('').map(c => SUP[c] ?? c).join('');
+
+  function parseInput(s: string): number | null {
+    s = s.trim().replace(/×\s*10\^?/i, 'e').replace(/\s+/g, '').replace('⁻', '-');
+    // normalise unicode superscript exponents if pasted
+    if (!/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(s)) return null;
+    const v = Number(s);
+    return isNaN(v) ? null : v;
+  }
+
+  function toSci(value: number): { coeff: number; exp: number } {
+    if (value === 0) return { coeff: 0, exp: 0 };
+    const exp = Math.floor(Math.log10(Math.abs(value)));
+    let coeff = value / Math.pow(10, exp);
+    // clean floating error
+    coeff = Math.round(coeff * 1e12) / 1e12;
+    return { coeff, exp };
+  }
+
+  function run() {
+    msg.textContent = '';
+    const raw = input.value;
+    if (!raw.trim()) { $('sn-sci').textContent = $('sn-e').textContent = $('sn-dec').textContent = '—'; return; }
+    const value = parseInput(raw);
+    if (value === null) { $('sn-sci').textContent = $('sn-e').textContent = $('sn-dec').textContent = '—'; msg.textContent = 'Enter a number (12345) or scientific notation (4.2e-4).'; return; }
+
+    const { coeff, exp } = toSci(value);
+    $('sn-sci').textContent = value === 0 ? '0' : `${coeff} × 10${sup(exp)}`;
+    $('sn-e').textContent = value === 0 ? '0' : `${coeff}e${exp}`;
+    // full decimal without exponential
+    let dec = value.toString();
+    if (dec.includes('e') || dec.includes('E')) {
+      dec = value.toLocaleString('en-US', { maximumFractionDigits: 20, useGrouping: false });
+    }
+    $('sn-dec').textContent = dec;
+  }
+
+  input.addEventListener('input', run);
+
+  document.querySelectorAll<HTMLButtonElement>('.tw-copy[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const txt = document.getElementById(btn.dataset.copy!)?.textContent ?? '';
+      if (!txt || txt === '—') return;
+      try {
+        await navigator.clipboard.writeText(txt);
+        const old = btn.textContent; btn.textContent = 'Copied!'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = old; btn.classList.remove('copied'); }, 1400);
+      } catch {}
+    });
+  });
+
+  run();
+</script>

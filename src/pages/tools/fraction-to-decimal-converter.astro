@@ -1,0 +1,116 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('fraction-to-decimal-converter')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-toggle" role="group" aria-label="Direction">
+      <button id="fd-mode-f2d" aria-pressed="true">Fraction → Decimal</button>
+      <button id="fd-mode-d2f" aria-pressed="false">Decimal → Fraction</button>
+    </div>
+
+    <div class="tw-field">
+      <label class="tw-label" for="fd-input" id="fd-label">Fraction (e.g. 3/4 or 1 1/2)</label>
+      <input id="fd-input" class="input input-lg tw-mono" type="text" value="3/4" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <div class="tw-result">
+      <span class="tw-result-key" id="fd-out-key">Decimal</span>
+      <span class="tw-result-val" id="fd-out">0.75</span>
+      <button class="tw-copy" data-copy="fd-out">Copy</button>
+    </div>
+    <p class="tw-note tw-error" id="fd-msg"></p>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const input = $<HTMLInputElement>('fd-input');
+  const out = $('fd-out'), msg = $('fd-msg'), outKey = $('fd-out-key'), label = $('fd-label');
+  const btnF2D = $<HTMLButtonElement>('fd-mode-f2d'), btnD2F = $<HTMLButtonElement>('fd-mode-d2f');
+  let mode: 'f2d' | 'd2f' = 'f2d';
+
+  const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
+  const round = (n: number) => Math.round(n * 1e10) / 1e10;
+
+  function fractionToDecimal(s: string): number | null {
+    s = s.trim();
+    // mixed number "a b/c"
+    let m = s.match(/^(-?\d+)\s+(\d+)\/(\d+)$/);
+    if (m) {
+      const whole = parseInt(m[1], 10), n = parseInt(m[2], 10), d = parseInt(m[3], 10);
+      if (d === 0) return null;
+      const sign = whole < 0 ? -1 : 1;
+      return whole + sign * (n / d);
+    }
+    // simple "a/b"
+    m = s.match(/^(-?\d+)\/(\d+)$/);
+    if (m) { const d = parseInt(m[2], 10); return d === 0 ? null : parseInt(m[1], 10) / d; }
+    // plain integer
+    if (/^-?\d+$/.test(s)) return parseInt(s, 10);
+    return null;
+  }
+
+  function decimalToFraction(s: string): string | null {
+    s = s.trim();
+    if (!/^-?\d*\.?\d+$/.test(s)) return null;
+    const value = parseFloat(s);
+    if (isNaN(value)) return null;
+    if (Number.isInteger(value)) return String(value);
+    const neg = value < 0;
+    const abs = Math.abs(value);
+    const decimals = (s.split('.')[1] || '').length;
+    let denom = Math.pow(10, decimals);
+    let numer = Math.round(abs * denom);
+    const g = gcd(numer, denom);
+    numer /= g; denom /= g;
+    const whole = Math.floor(numer / denom);
+    const rem = numer % denom;
+    const sign = neg ? '-' : '';
+    if (whole > 0 && rem > 0) return `${sign}${whole} ${rem}/${denom}  (${sign}${numer}/${denom})`;
+    return `${sign}${numer}/${denom}`;
+  }
+
+  function run() {
+    msg.textContent = '';
+    const s = input.value;
+    if (!s.trim()) { out.textContent = '—'; return; }
+    if (mode === 'f2d') {
+      const d = fractionToDecimal(s);
+      if (d === null) { out.textContent = '—'; msg.textContent = 'Enter a fraction like 3/4 or a mixed number like 1 1/2.'; return; }
+      out.textContent = String(round(d));
+    } else {
+      const f = decimalToFraction(s);
+      if (f === null) { out.textContent = '—'; msg.textContent = 'Enter a decimal number like 0.75.'; return; }
+      out.textContent = f;
+    }
+  }
+
+  function setMode(m: 'f2d' | 'd2f') {
+    mode = m;
+    btnF2D.setAttribute('aria-pressed', String(m === 'f2d'));
+    btnD2F.setAttribute('aria-pressed', String(m === 'd2f'));
+    if (m === 'f2d') { label.textContent = 'Fraction (e.g. 3/4 or 1 1/2)'; outKey.textContent = 'Decimal'; input.value = '3/4'; }
+    else { label.textContent = 'Decimal (e.g. 0.75)'; outKey.textContent = 'Fraction'; input.value = '0.75'; }
+    run();
+  }
+
+  btnF2D.addEventListener('click', () => setMode('f2d'));
+  btnD2F.addEventListener('click', () => setMode('d2f'));
+  input.addEventListener('input', run);
+
+  document.querySelectorAll<HTMLButtonElement>('.tw-copy[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const txt = document.getElementById(btn.dataset.copy!)?.textContent ?? '';
+      try {
+        await navigator.clipboard.writeText(txt);
+        const old = btn.textContent; btn.textContent = 'Copied!'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = old; btn.classList.remove('copied'); }, 1400);
+      } catch {}
+    });
+  });
+
+  run();
+</script>
