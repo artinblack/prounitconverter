@@ -1,0 +1,109 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('roman-numeral-converter')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-toggle" role="group" aria-label="Conversion direction">
+      <button id="rn-mode-n2r" aria-pressed="true">Number → Roman</button>
+      <button id="rn-mode-r2n" aria-pressed="false">Roman → Number</button>
+    </div>
+
+    <div class="tw-field">
+      <label class="tw-label" for="rn-input" id="rn-input-label">Number (1 – 3,999,999)</label>
+      <input id="rn-input" class="input input-lg tw-mono" type="text" value="2024" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <div class="tw-result">
+      <span class="tw-result-key" id="rn-out-key">Roman</span>
+      <span class="tw-result-val" id="rn-out">MMXXIV</span>
+      <button class="tw-copy" data-copy="rn-out">Copy</button>
+    </div>
+    <p class="tw-note" id="rn-msg"></p>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const input = $<HTMLInputElement>('rn-input');
+  const out = $('rn-out'), msg = $('rn-msg'), outKey = $('rn-out-key'), inLabel = $('rn-input-label');
+  const btnN2R = $<HTMLButtonElement>('rn-mode-n2r'), btnR2N = $<HTMLButtonElement>('rn-mode-r2n');
+  let mode: 'n2r' | 'r2n' = 'n2r';
+
+  const MAP: [number, string][] = [
+    [1000000, 'M̄'], [900000, 'C̄M̄'], [500000, 'D̄'], [400000, 'C̄D̄'], [100000, 'C̄'],
+    [90000, 'X̄C̄'], [50000, 'L̄'], [40000, 'X̄L̄'], [10000, 'X̄'],
+    [9000, 'M̄X̄'], [5000, 'V̄'], [4000, 'M̄V̄'], [1000, 'M'],
+    [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'],
+    [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'],
+    [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I'],
+  ];
+
+  function toRoman(n: number): string {
+    let res = '';
+    for (const [v, sym] of MAP) { while (n >= v) { res += sym; n -= v; } }
+    return res;
+  }
+
+  const SIMPLE: [string, number][] = [
+    ['M', 1000], ['CM', 900], ['D', 500], ['CD', 400], ['C', 100],
+    ['XC', 90], ['L', 50], ['XL', 40], ['X', 10], ['IX', 9], ['V', 5], ['IV', 4], ['I', 1],
+  ];
+  function fromRoman(str: string): number | null {
+    // strip overlines (vinculum) → multiply that section by 1000; support common combining/overline forms
+    const s = str.toUpperCase().replace(/̄|̅|¯/g, '');
+    if (!/^[MDCLXVI]+$/.test(s)) return null;
+    let i = 0, total = 0;
+    for (const [sym, val] of SIMPLE) {
+      while (s.startsWith(sym, i)) { total += val; i += sym.length; }
+    }
+    if (i !== s.length) return null;
+    // round-trip validation to reject malformed numerals like IIII / VX
+    return toRoman(total).replace(/̄|̅|¯/g, '') === s ? total : null;
+  }
+
+  function run() {
+    const raw = input.value.trim();
+    msg.textContent = ''; msg.classList.remove('tw-error');
+    if (!raw) { out.textContent = '—'; return; }
+    if (mode === 'n2r') {
+      const n = Number(raw.replace(/,/g, ''));
+      if (!Number.isInteger(n) || n < 1 || n > 3999999) {
+        out.textContent = '—'; msg.textContent = 'Enter a whole number from 1 to 3,999,999.'; msg.classList.add('tw-error'); return;
+      }
+      out.textContent = toRoman(n);
+    } else {
+      const n = fromRoman(raw);
+      if (n === null) { out.textContent = '—'; msg.textContent = 'That is not a valid Roman numeral.'; msg.classList.add('tw-error'); return; }
+      out.textContent = n.toLocaleString('en-US');
+    }
+  }
+
+  function setMode(m: 'n2r' | 'r2n') {
+    mode = m;
+    btnN2R.setAttribute('aria-pressed', String(m === 'n2r'));
+    btnR2N.setAttribute('aria-pressed', String(m === 'r2n'));
+    if (m === 'n2r') { inLabel.textContent = 'Number (1 – 3,999,999)'; outKey.textContent = 'Roman'; input.value = '2024'; }
+    else { inLabel.textContent = 'Roman numeral'; outKey.textContent = 'Number'; input.value = 'MMXXIV'; }
+    run();
+  }
+
+  btnN2R.addEventListener('click', () => setMode('n2r'));
+  btnR2N.addEventListener('click', () => setMode('r2n'));
+  input.addEventListener('input', run);
+
+  document.querySelectorAll<HTMLButtonElement>('.tw-copy[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const txt = document.getElementById(btn.dataset.copy!)?.textContent ?? '';
+      try {
+        await navigator.clipboard.writeText(txt);
+        const old = btn.textContent; btn.textContent = 'Copied!'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = old; btn.classList.remove('copied'); }, 1400);
+      } catch {}
+    });
+  });
+
+  run();
+</script>

@@ -1,5 +1,6 @@
 ---
 import { categories } from '../lib/units';
+import { tools } from '../lib/tools';
 const year = new Date().getFullYear();
 ---
 
@@ -50,6 +51,16 @@ const year = new Date().getFullYear();
       </div>
 
       <div class="footer-links">
+        <h3 class="footer-heading">Tools</h3>
+        <ul>
+          {tools.map(t => (
+            <li><a href={`/tools/${t.slug}`}>{t.icon} {t.name}</a></li>
+          ))}
+          <li><a href="/tools">All tools →</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links">
         <h3 class="footer-heading">Company</h3>
         <ul>
           <li><a href="/about">About Us</a></li>
@@ -86,11 +97,15 @@ const year = new Date().getFullYear();
 
   .footer-grid {
     display: grid;
-    grid-template-columns: 1.8fr 1fr 1fr 1fr;
-    gap: var(--sp-xxl);
+    grid-template-columns: 1.8fr 1fr 1fr 1fr 1fr;
+    gap: var(--sp-xl);
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1000px) {
+    .footer-grid { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  @media (max-width: 700px) {
     .footer-grid { grid-template-columns: 1fr 1fr; }
   }
 

@@ -4,6 +4,7 @@ import ConverterWidget from '../components/ConverterWidget.astro';
 import ConversionTable from '../components/ConversionTable.astro';
 import CategoryGrid from '../components/CategoryGrid.astro';
 import { categories, categoryMap } from '../lib/units';
+import { tools } from '../lib/tools';
 
 const lengthCategory = categoryMap.get('length')!;
 
@@ -171,7 +172,7 @@ const schemas = [
       <div class="section-header">
         <h2 class="display-lg">All Unit Converters</h2>
         <p class="body-lg" style="color: var(--color-ink-mute); margin-top: 8px;">
-          14 categories · 120+ units · Live currency rates
+          18 categories · 120+ units · Live currency rates
         </p>
       </div>
       <div style="margin-top: var(--sp-xxl);">
@@ -203,6 +204,32 @@ const schemas = [
         <a href="/convert/psi-to-kpa" class="unit-link">PSI to kPa</a>
         <a href="/convert/kw-to-hp"  class="unit-link">kW to HP</a>
         <a href="/convert/deg-to-rad" class="unit-link">Degrees to Radians</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       HANDY TOOLS
+  ════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="display-lg">Handy Converters &amp; Tools</h2>
+        <p class="body-lg" style="color: var(--color-ink-mute); margin-top: 8px;">
+          Beyond units — color, text, time and developer converters. Free and private.
+        </p>
+      </div>
+      <div class="home-tools-grid" style="margin-top: var(--sp-xxl);">
+        {tools.map(t => (
+          <a href={`/tools/${t.slug}`} class="home-tool-card card">
+            <span class="home-tool-icon" aria-hidden="true">{t.icon}</span>
+            <span class="home-tool-name">{t.name}</span>
+            <span class="home-tool-desc">{t.tagline}</span>
+          </a>
+        ))}
+      </div>
+      <div style="margin-top: var(--sp-xl);">
+        <a href="/tools" class="btn btn-secondary btn-sm">See all tools →</a>
       </div>
     </div>
   </section>
@@ -476,6 +503,33 @@ const schemas = [
     text-transform: uppercase;
     font-size: 11px;
   }
+
+  /* Home tools grid */
+  .home-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-lg);
+  }
+  @media (max-width: 820px) { .home-tools-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .home-tools-grid { grid-template-columns: 1fr; } }
+
+  .home-tool-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--sp-lg);
+    text-decoration: none;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
+  .home-tool-card:hover {
+    text-decoration: none;
+    border-color: var(--color-primary-subtle);
+    box-shadow: var(--shadow-2);
+    transform: translateY(-2px);
+  }
+  .home-tool-icon { font-size: 24px; line-height: 1; margin-bottom: 4px; }
+  .home-tool-name { font-size: 15px; font-weight: 600; color: var(--color-ink); }
+  .home-tool-desc { font-size: 13px; color: var(--color-ink-mute); line-height: 1.5; }
 
   /* How it works */
   .how-title { margin-bottom: var(--sp-xxl); }

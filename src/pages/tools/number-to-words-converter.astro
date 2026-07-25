@@ -1,0 +1,108 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('number-to-words-converter')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-toggle" role="group" aria-label="Output mode">
+      <button id="nw-mode-plain" aria-pressed="true">Plain words</button>
+      <button id="nw-mode-currency" aria-pressed="false">Currency (cheque)</button>
+    </div>
+
+    <div class="tw-field">
+      <label class="tw-label" for="nw-input">Number</label>
+      <input id="nw-input" class="input input-lg tw-mono" type="text" value="1234.5" inputmode="decimal" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <div class="tw-field">
+      <label class="tw-label" for="nw-out">In words</label>
+      <textarea id="nw-out" class="tw-textarea" readonly></textarea>
+    </div>
+    <div class="tw-actions">
+      <button class="tw-copy" id="nw-copy">Copy</button>
+    </div>
+    <p class="tw-note tw-error" id="nw-msg"></p>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const input = $<HTMLInputElement>('nw-input');
+  const out = $<HTMLTextAreaElement>('nw-out'), msg = $('nw-msg'), copyBtn = $<HTMLButtonElement>('nw-copy');
+  const btnPlain = $<HTMLButtonElement>('nw-mode-plain'), btnCur = $<HTMLButtonElement>('nw-mode-currency');
+  let mode: 'plain' | 'currency' = 'plain';
+
+  const ONES = ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+  const TENS = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+  const SCALE = ['','thousand','million','billion','trillion','quadrillion'];
+
+  function threeToWords(n: number): string {
+    let s = '';
+    if (n >= 100) { s += ONES[Math.floor(n / 100)] + ' hundred'; n %= 100; if (n) s += ' '; }
+    if (n >= 20) { s += TENS[Math.floor(n / 10)]; if (n % 10) s += '-' + ONES[n % 10]; }
+    else if (n > 0) s += ONES[n];
+    return s;
+  }
+
+  function intToWords(numStr: string): string {
+    let n = BigInt(numStr);
+    if (n === 0n) return 'zero';
+    const groups: number[] = [];
+    while (n > 0n) { groups.push(Number(n % 1000n)); n /= 1000n; }
+    if (groups.length > SCALE.length) return '';
+    const parts: string[] = [];
+    for (let i = groups.length - 1; i >= 0; i--) {
+      if (groups[i] === 0) continue;
+      parts.push(threeToWords(groups[i]) + (SCALE[i] ? ' ' + SCALE[i] : ''));
+    }
+    return parts.join(' ');
+  }
+
+  function run() {
+    const raw = input.value.trim().replace(/,/g, '');
+    msg.textContent = '';
+    if (!raw) { out.value = ''; return; }
+    if (!/^-?\d+(\.\d+)?$/.test(raw)) { out.value = ''; msg.textContent = 'Enter a valid number.'; return; }
+    const neg = raw.startsWith('-');
+    const [intPart, decPart = ''] = raw.replace('-', '').split('.');
+    const intWords = intToWords(intPart || '0');
+    if (!intWords) { out.value = ''; msg.textContent = 'Number is too large.'; return; }
+
+    let result = '';
+    if (mode === 'currency') {
+      const cents = decPart ? (decPart + '00').slice(0, 2) : '00';
+      const dollars = intToWords(intPart || '0');
+      result = `${dollars} dollar${(intPart === '1' && !decPart) ? '' : 's'}`;
+      result += ` and ${intToWords(String(parseInt(cents, 10)))} cent${cents === '01' ? '' : 's'}`;
+    } else {
+      result = intWords;
+      if (decPart) result += ' point ' + decPart.split('').map(d => ONES[+d]).join(' ');
+    }
+    if (neg) result = 'negative ' + result;
+    result = result.charAt(0).toUpperCase() + result.slice(1);
+    out.value = result;
+  }
+
+  function setMode(m: 'plain' | 'currency') {
+    mode = m;
+    btnPlain.setAttribute('aria-pressed', String(m === 'plain'));
+    btnCur.setAttribute('aria-pressed', String(m === 'currency'));
+    run();
+  }
+
+  btnPlain.addEventListener('click', () => setMode('plain'));
+  btnCur.addEventListener('click', () => setMode('currency'));
+  input.addEventListener('input', run);
+  copyBtn.addEventListener('click', async () => {
+    if (!out.value) return;
+    try {
+      await navigator.clipboard.writeText(out.value);
+      copyBtn.textContent = 'Copied!'; copyBtn.classList.add('copied');
+      setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1400);
+    } catch {}
+  });
+
+  run();
+</script>

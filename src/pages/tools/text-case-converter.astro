@@ -1,0 +1,97 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('text-case-converter')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-field">
+      <label class="tw-label" for="tc-input">Your text</label>
+      <textarea id="tc-input" class="tw-textarea" placeholder="Type or paste your text here…" spellcheck="false"></textarea>
+    </div>
+
+    <div class="tw-counts tw-note" id="tc-counts">0 words · 0 characters · 0 sentences</div>
+
+    <div class="tw-actions">
+      <button class="btn btn-ghost btn-sm" data-case="upper">UPPERCASE</button>
+      <button class="btn btn-ghost btn-sm" data-case="lower">lowercase</button>
+      <button class="btn btn-ghost btn-sm" data-case="title">Title Case</button>
+      <button class="btn btn-ghost btn-sm" data-case="sentence">Sentence case</button>
+      <button class="btn btn-ghost btn-sm" data-case="camel">camelCase</button>
+      <button class="btn btn-ghost btn-sm" data-case="pascal">PascalCase</button>
+      <button class="btn btn-ghost btn-sm" data-case="snake">snake_case</button>
+      <button class="btn btn-ghost btn-sm" data-case="kebab">kebab-case</button>
+      <button class="btn btn-ghost btn-sm" data-case="alt">aLtErNaTiNg</button>
+    </div>
+
+    <div class="tw-field">
+      <label class="tw-label" for="tc-output">Result</label>
+      <textarea id="tc-output" class="tw-textarea" readonly placeholder="Converted text appears here…"></textarea>
+    </div>
+
+    <div class="tw-actions">
+      <button class="tw-copy" id="tc-copy">Copy result</button>
+      <button class="btn btn-ghost btn-sm" id="tc-clear">Clear</button>
+    </div>
+  </div>
+</ToolLayout>
+
+<script>
+  const input = document.getElementById('tc-input') as HTMLTextAreaElement;
+  const output = document.getElementById('tc-output') as HTMLTextAreaElement;
+  const counts = document.getElementById('tc-counts') as HTMLElement;
+  const copyBtn = document.getElementById('tc-copy') as HTMLButtonElement;
+  const clearBtn = document.getElementById('tc-clear') as HTMLButtonElement;
+
+  const words = (s: string) => (s.trim().match(/\S+/g) || []);
+
+  function updateCounts() {
+    const s = input.value;
+    const w = words(s).length;
+    const c = s.length;
+    const sen = (s.match(/[.!?]+(\s|$)/g) || []).length || (s.trim() ? 1 : 0);
+    counts.textContent = `${w} words · ${c} characters · ${sen} sentences`;
+  }
+
+  function convert(type: string): string {
+    const s = input.value;
+    const w = words(s);
+    switch (type) {
+      case 'upper': return s.toUpperCase();
+      case 'lower': return s.toLowerCase();
+      case 'title': return s.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
+      case 'sentence': return s.toLowerCase().replace(/(^\s*\w|[.!?]\s+\w)/g, m => m.toUpperCase());
+      case 'camel': return w.map((x, i) => i === 0 ? x.toLowerCase() : x.charAt(0).toUpperCase() + x.slice(1).toLowerCase()).join('');
+      case 'pascal': return w.map(x => x.charAt(0).toUpperCase() + x.slice(1).toLowerCase()).join('');
+      case 'snake': return w.map(x => x.toLowerCase()).join('_');
+      case 'kebab': return w.map(x => x.toLowerCase()).join('-');
+      case 'alt': return s.split('').map((ch, i) => i % 2 ? ch.toUpperCase() : ch.toLowerCase()).join('');
+      default: return s;
+    }
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-case]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      output.value = convert(btn.dataset.case!);
+    });
+  });
+
+  input.addEventListener('input', updateCounts);
+
+  copyBtn.addEventListener('click', async () => {
+    if (!output.value) return;
+    try {
+      await navigator.clipboard.writeText(output.value);
+      copyBtn.textContent = 'Copied!';
+      copyBtn.classList.add('copied');
+      setTimeout(() => { copyBtn.textContent = 'Copy result'; copyBtn.classList.remove('copied'); }, 1500);
+    } catch { output.select(); }
+  });
+
+  clearBtn.addEventListener('click', () => {
+    input.value = ''; output.value = ''; updateCounts(); input.focus();
+  });
+
+  updateCounts();
+</script>

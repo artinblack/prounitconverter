@@ -1,0 +1,287 @@
+---
+import Layout from './Layout.astro';
+import { getRelatedTools, type Tool } from '../lib/tools';
+
+interface Props {
+  tool: Tool;
+}
+const { tool } = Astro.props;
+
+const siteUrl = 'https://prounitconverter.com';
+const pageUrl = `${siteUrl}/tools/${tool.slug}`;
+const related = getRelatedTools(tool);
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Tools', item: `${siteUrl}/tools` },
+      { '@type': 'ListItem', position: 3, name: tool.name, item: pageUrl },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: tool.name,
+    url: pageUrl,
+    applicationCategory: 'UtilityApplication',
+    operatingSystem: 'Any',
+    browserRequirements: 'Requires JavaScript',
+    description: tool.metaDescription,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    author: { '@type': 'Organization', name: 'Unit Converter' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: `How to use the ${tool.name}`,
+    description: tool.metaDescription,
+    step: tool.howToSteps.map((s, i) => ({
+      '@type': 'HowToStep',
+      position: i + 1,
+      name: s.title,
+      text: s.text,
+    })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: tool.faqs.map(faq => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: { '@type': 'Answer', text: faq.a },
+    })),
+  },
+];
+---
+
+<Layout
+  title={tool.seoTitle}
+  description={tool.metaDescription}
+  canonical={pageUrl}
+  schemas={schemas}
+  keywords={tool.keywords}
+  ogTitle={tool.seoTitle}
+>
+  <!-- BREADCRUMB -->
+  <nav aria-label="Breadcrumb" class="breadcrumb-bar">
+    <div class="container">
+      <ol class="breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
+          <meta itemprop="position" content="1" />
+        </li>
+        <li aria-hidden="true" class="breadcrumb-sep">›</li>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="/tools" itemprop="item"><span itemprop="name">Tools</span></a>
+          <meta itemprop="position" content="2" />
+        </li>
+        <li aria-hidden="true" class="breadcrumb-sep">›</li>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">{tool.name}</span>
+          <meta itemprop="position" content="3" />
+        </li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="tool-hero hero-mesh">
+    <div class="container">
+      <div class="tool-hero-inner">
+        <span class="tool-icon" aria-hidden="true">{tool.icon}</span>
+        <h1 class="display-lg tool-title">{tool.h1}</h1>
+        <p class="body-lg tool-desc">{tool.tagline}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTERACTIVE WIDGET (page-specific) -->
+  <section class="section-sm">
+    <div class="container">
+      <div class="tool-widget-wrap">
+        <slot />
+      </div>
+    </div>
+  </section>
+
+  <!-- LONG-FORM CONTENT -->
+  <section class="section">
+    <div class="container content-narrow">
+      <p class="body-lg" style="color: var(--color-ink-2); margin-bottom: var(--sp-lg);">{tool.intro}</p>
+      <p class="body-md" style="color: var(--color-ink-2); margin-bottom: var(--sp-xxl);">{tool.body}</p>
+
+      <h2 class="heading-md" style="margin-bottom: var(--sp-lg);">How to use the {tool.name}</h2>
+      <div class="tool-steps">
+        {tool.howToSteps.map((step, i) => (
+          <div class="tool-step card">
+            <div class="tool-step-num">{i + 1}</div>
+            <div>
+              <h3 class="heading-sm" style="margin-bottom: 4px;">{step.title}</h3>
+              <p class="body-md" style="color: var(--color-ink-mute);">{step.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <h2 class="heading-md" style="margin: var(--sp-huge) 0 var(--sp-lg);">What you can use it for</h2>
+      <ul class="tool-usecases">
+        {tool.useCases.map(uc => <li>{uc}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  {tool.faqs.length > 0 && (
+    <section class="section" style="background: var(--color-canvas-soft); border-top: 1px solid var(--color-hairline);">
+      <div class="container content-narrow">
+        <h2 class="display-md" style="margin-bottom: var(--sp-xxl);">{tool.name} FAQ</h2>
+        <div class="faq-list">
+          {tool.faqs.map((faq, i) => (
+            <div class="faq-item" id={`tool-faq-${i}`}>
+              <button class="faq-question" aria-expanded="false" aria-controls={`tool-faq-answer-${i}`}>
+                {faq.q}
+                <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+              <div class="faq-answer" id={`tool-faq-answer-${i}`} role="region">
+                <p>{faq.a}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- RELATED TOOLS -->
+  <section class="section-sm">
+    <div class="container">
+      <h2 class="heading-sm" style="color: var(--color-ink-mute); margin-bottom: var(--sp-lg); text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; font-weight: 600;">
+        Related tools
+      </h2>
+      <div class="other-cats">
+        {related.map(t => (
+          <a href={`/tools/${t.slug}`} class="other-cat-link">
+            <span aria-hidden="true">{t.icon}</span> {t.name}
+          </a>
+        ))}
+        {tool.relatedConvert && (
+          <a href={tool.relatedConvert.href} class="other-cat-link">
+            <span aria-hidden="true">🔁</span> {tool.relatedConvert.label}
+          </a>
+        )}
+        <a href="/tools" class="other-cat-link"><span aria-hidden="true">🧰</span> All tools</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .tool-hero { padding: var(--sp-xxl) 0; }
+  .tool-hero-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-sm);
+    max-width: 680px;
+  }
+  .tool-icon { font-size: 36px; line-height: 1; margin-bottom: var(--sp-xs); }
+  .tool-title { color: var(--color-ink); }
+  .tool-desc { color: var(--color-ink-2); }
+
+  .tool-widget-wrap { max-width: 760px; }
+  .content-narrow { max-width: 760px; }
+
+  .tool-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-lg);
+  }
+  @media (max-width: 760px) {
+    .tool-steps { grid-template-columns: 1fr; }
+  }
+  .tool-step {
+    display: flex;
+    gap: var(--sp-md);
+    align-items: flex-start;
+    padding: var(--sp-lg);
+  }
+  .tool-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .tool-usecases {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-sm);
+  }
+  .tool-usecases li {
+    position: relative;
+    padding-left: 26px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-ink-2);
+  }
+  .tool-usecases li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  .other-cats { display: flex; flex-wrap: wrap; gap: var(--sp-sm); }
+  .other-cat-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: var(--rounded-pill);
+    font-size: 13px;
+    color: var(--color-ink-2);
+    border: 1px solid var(--color-hairline);
+    text-decoration: none;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .other-cat-link:hover {
+    border-color: var(--color-primary-subtle);
+    color: var(--color-primary);
+    background: var(--color-canvas-soft);
+    text-decoration: none;
+  }
+</style>
+
+<script>
+  // FAQ accordion (shared pattern with the rest of the site)
+  document.querySelectorAll<HTMLButtonElement>('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item')!;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(el => {
+        el.classList.remove('open');
+        el.querySelector('.faq-question')?.setAttribute('aria-expanded', 'false');
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+</script>

@@ -1,6 +1,6 @@
-# robots.txt — unitconverter.tools
+# robots.txt — prounitconverter.com
 # Generated for search engine crawlers
-# Sitemap: https://unitconverter.tools/sitemap-index.xml
+# Sitemap: https://prounitconverter.com/sitemap-index.xml
 
 # ──────────────────────────────────────────────────────────────
 # Google Search Crawler
@@ -68,4 +68,4 @@ Disallow: /500
 # ──────────────────────────────────────────────────────────────
 # Sitemap location (all major crawlers read this line)
 # ──────────────────────────────────────────────────────────────
-Sitemap: https://unitconverter.tools/sitemap-index.xml
+Sitemap: https://prounitconverter.com/sitemap-index.xml
