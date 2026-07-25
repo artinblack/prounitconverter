@@ -1,0 +1,114 @@
+---
+import ToolLayout from '../../components/ToolLayout.astro';
+import { toolMap } from '../../lib/tools';
+const tool = toolMap.get('bmi-calculator')!;
+---
+
+<ToolLayout tool={tool}>
+  <div class="tw-card">
+    <div class="tw-toggle" role="group" aria-label="Units">
+      <button id="bmi-metric" aria-pressed="true">Metric</button>
+      <button id="bmi-imperial" aria-pressed="false">Imperial</button>
+    </div>
+
+    <!-- Metric inputs -->
+    <div id="bmi-metric-fields" class="tw-grid">
+      <div class="tw-field">
+        <label class="tw-label" for="bmi-cm">Height (cm)</label>
+        <input id="bmi-cm" class="input tw-mono" type="number" min="0" step="any" value="175" />
+      </div>
+      <div class="tw-field">
+        <label class="tw-label" for="bmi-kg">Weight (kg)</label>
+        <input id="bmi-kg" class="input tw-mono" type="number" min="0" step="any" value="70" />
+      </div>
+    </div>
+
+    <!-- Imperial inputs -->
+    <div id="bmi-imperial-fields" class="tw-grid" style="display:none;">
+      <div class="tw-field">
+        <span class="tw-label">Height</span>
+        <div class="tw-row">
+          <input id="bmi-ft" class="input tw-mono" type="number" min="0" step="1" value="5" aria-label="Feet" style="width:80px;" /><span class="tw-note">ft</span>
+          <input id="bmi-in" class="input tw-mono" type="number" min="0" step="any" value="9" aria-label="Inches" style="width:80px;" /><span class="tw-note">in</span>
+        </div>
+      </div>
+      <div class="tw-field">
+        <label class="tw-label" for="bmi-lb">Weight (lb)</label>
+        <input id="bmi-lb" class="input tw-mono" type="number" min="0" step="any" value="154" />
+      </div>
+    </div>
+
+    <div class="tw-result" style="background:var(--color-primary-subtle);border-color:transparent;">
+      <span class="tw-result-key">Your BMI</span>
+      <span class="tw-result-val" id="bmi-value" style="font-size:20px;">—</span>
+      <span class="tw-result-val" id="bmi-cat" style="flex:none;font-weight:600;">—</span>
+    </div>
+    <div class="tw-result">
+      <span class="tw-result-key">Healthy range</span>
+      <span class="tw-result-val" id="bmi-range">—</span>
+    </div>
+    <p class="tw-note">BMI is a screening figure, not a diagnosis — it doesn't distinguish muscle from fat.</p>
+  </div>
+</ToolLayout>
+
+<script>
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const btnM = $<HTMLButtonElement>('bmi-metric'), btnI = $<HTMLButtonElement>('bmi-imperial');
+  const metricFields = $('bmi-metric-fields'), imperialFields = $('bmi-imperial-fields');
+  const cm = $<HTMLInputElement>('bmi-cm'), kg = $<HTMLInputElement>('bmi-kg');
+  const ft = $<HTMLInputElement>('bmi-ft'), inch = $<HTMLInputElement>('bmi-in'), lb = $<HTMLInputElement>('bmi-lb');
+  let unit: 'metric' | 'imperial' = 'metric';
+
+  function category(bmi: number): { label: string; color: string } {
+    if (bmi < 18.5) return { label: 'Underweight', color: '#2563eb' };
+    if (bmi < 25)   return { label: 'Normal', color: '#16a34a' };
+    if (bmi < 30)   return { label: 'Overweight', color: '#d97706' };
+    return { label: 'Obese', color: '#dc2626' };
+  }
+
+  function run() {
+    let heightM = 0, weightKg = 0;
+    if (unit === 'metric') {
+      heightM = (parseFloat(cm.value) || 0) / 100;
+      weightKg = parseFloat(kg.value) || 0;
+    } else {
+      const totalIn = (parseFloat(ft.value) || 0) * 12 + (parseFloat(inch.value) || 0);
+      heightM = totalIn * 0.0254;
+      weightKg = (parseFloat(lb.value) || 0) * 0.45359237;
+    }
+    if (heightM <= 0 || weightKg <= 0) {
+      $('bmi-value').textContent = '—'; $('bmi-cat').textContent = '—'; $('bmi-range').textContent = '—';
+      return;
+    }
+    const bmi = weightKg / (heightM * heightM);
+    const cat = category(bmi);
+    $('bmi-value').textContent = bmi.toFixed(1);
+    const catEl = $('bmi-cat');
+    catEl.textContent = cat.label;
+    catEl.style.color = cat.color;
+
+    // healthy weight range for this height (BMI 18.5–24.9)
+    const lo = 18.5 * heightM * heightM;
+    const hi = 24.9 * heightM * heightM;
+    if (unit === 'metric') {
+      $('bmi-range').textContent = `${lo.toFixed(1)}–${hi.toFixed(1)} kg`;
+    } else {
+      $('bmi-range').textContent = `${(lo / 0.45359237).toFixed(1)}–${(hi / 0.45359237).toFixed(1)} lb`;
+    }
+  }
+
+  function setUnit(u: 'metric' | 'imperial') {
+    unit = u;
+    btnM.setAttribute('aria-pressed', String(u === 'metric'));
+    btnI.setAttribute('aria-pressed', String(u === 'imperial'));
+    metricFields.style.display = u === 'metric' ? '' : 'none';
+    imperialFields.style.display = u === 'imperial' ? '' : 'none';
+    run();
+  }
+
+  btnM.addEventListener('click', () => setUnit('metric'));
+  btnI.addEventListener('click', () => setUnit('imperial'));
+  [cm, kg, ft, inch, lb].forEach(el => el.addEventListener('input', run));
+
+  run();
+</script>

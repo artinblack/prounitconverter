@@ -140,3 +140,99 @@ test.describe('Tools batch 2 — pages load & compute', () => {
     await expect(page.locator('#sg-out')).toHaveText('my-first-blog-post');
   });
 });
+
+test.describe('Tools batch 3 — pages load & compute', () => {
+  const slugs = ['age-calculator', 'bmi-calculator', 'word-counter'];
+
+  for (const s of slugs) {
+    test(`${s} loads with h1 and no console errors`, async ({ page }) => {
+      const errors: string[] = [];
+      page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+      await page.goto(`/tools/${s}`);
+      await expect(page.locator('h1')).toBeVisible();
+      expect(errors.filter(e => !/favicon|adsbygoogle|gtag|analytics/i.test(e))).toEqual([]);
+    });
+  }
+
+  test('age: known DOB gives a non-empty age', async ({ page }) => {
+    await page.goto('/tools/age-calculator');
+    await page.fill('#age-dob', '2000-01-01');
+    await page.fill('#age-at', '2020-01-01');
+    await expect(page.locator('#age-main')).toHaveText('20 years, 0 months, 0 days');
+    await expect(page.locator('#age-days')).toHaveText('7,305'); // includes 5 leap days
+  });
+
+  test('bmi: 175cm / 70kg → 22.9 Normal', async ({ page }) => {
+    await page.goto('/tools/bmi-calculator');
+    await page.fill('#bmi-cm', '175');
+    await page.fill('#bmi-kg', '70');
+    await expect(page.locator('#bmi-value')).toHaveText('22.9');
+    await expect(page.locator('#bmi-cat')).toHaveText('Normal');
+  });
+
+  test('word counter: counts words and characters', async ({ page }) => {
+    await page.goto('/tools/word-counter');
+    await page.fill('#wc-input', 'Hello world foo');
+    await expect(page.locator('#wc-words')).toHaveText('3');
+    await expect(page.locator('#wc-chars')).toHaveText('15');
+  });
+});
+
+test.describe('Charts — printable conversion charts', () => {
+  test('charts hub lists chart links', async ({ page }) => {
+    await page.goto('/charts');
+    await expect(page.locator('h1')).toContainText('Conversion Charts');
+    await expect(page.locator('a[href="/charts/cm-to-in"]').first()).toBeVisible();
+    await expect(page.locator('a[href="/charts/kg-to-lb"]').first()).toBeVisible();
+  });
+
+  test('cm-to-in chart renders a correct table row', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+    await page.goto('/charts/cm-to-in');
+    await expect(page.locator('h1')).toContainText('Centimeter');
+    // 10 cm = 3.937 in — find the row
+    const row = page.locator('.chart-table tbody tr', { hasText: '10 cm' });
+    await expect(row).toContainText('3.937');
+    expect(errors.filter(e => !/favicon|adsbygoogle|gtag|analytics/i.test(e))).toEqual([]);
+  });
+
+  test('kg-to-lb chart: 10 kg → 22.046 lb', async ({ page }) => {
+    await page.goto('/charts/kg-to-lb');
+    const row = page.locator('.chart-table tbody tr', { hasText: '10 kg' });
+    await expect(row).toContainText('22.046');
+  });
+
+  test('chart page has a print button and converter link', async ({ page }) => {
+    await page.goto('/charts/c-to-f');
+    await expect(page.locator('#print-btn')).toBeVisible();
+    await expect(page.locator('a[href="/convert/c-to-f"]')).toBeVisible();
+  });
+});
+
+test.describe('Tools — polish (deep-link, recent, OG)', () => {
+  test('deep-link: ?hex=00FF00 preloads the color converter', async ({ page }) => {
+    await page.goto('/tools/color-converter?hex=00FF00');
+    await expect(page.locator('#out-rgb')).toHaveText('rgb(0, 255, 0)');
+  });
+
+  test('deep-link: editing updates the URL query param', async ({ page }) => {
+    await page.goto('/tools/slug-generator');
+    await page.fill('#sg-input', 'Hello World');
+    await expect(page).toHaveURL(/[?&]text=Hello(\+|%20)World/);
+  });
+
+  test('recently-used: visiting a tool then the hub shows it', async ({ page }) => {
+    await page.goto('/tools/base64-converter');
+    await page.goto('/tools');
+    const recent = page.locator('#recent-tools-section');
+    await expect(recent).toBeVisible();
+    await expect(recent.locator('a[href="/tools/base64-converter"]')).toBeVisible();
+  });
+
+  test('per-tool OG image is wired into meta tags', async ({ page }) => {
+    await page.goto('/tools/color-converter');
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      'content', 'https://prounitconverter.com/og/color-converter.png');
+  });
+});

@@ -64,6 +64,7 @@ const schemas = [
   schemas={schemas}
   keywords={tool.keywords}
   ogTitle={tool.seoTitle}
+  ogImage={`${siteUrl}/og/${tool.slug}.png`}
 >
   <!-- BREADCRUMB -->
   <nav aria-label="Breadcrumb" class="breadcrumb-bar">
@@ -267,6 +268,16 @@ const schemas = [
     text-decoration: none;
   }
 </style>
+
+<!-- Record this tool as "recently used" (inline so tool metadata is available) -->
+<script is:inline define:vars={{ toolMeta: { slug: tool.slug, name: tool.name, icon: tool.icon } }}>
+  try {
+    const KEY = 'uc_recent_tools';
+    const list = JSON.parse(localStorage.getItem(KEY) || '[]');
+    const next = [toolMeta, ...list.filter((t) => t && t.slug !== toolMeta.slug)].slice(0, 6);
+    localStorage.setItem(KEY, JSON.stringify(next));
+  } catch (e) {}
+</script>
 
 <script>
   // FAQ accordion (shared pattern with the rest of the site)

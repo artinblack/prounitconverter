@@ -121,4 +121,7 @@ const tool = toolMap.get('text-to-binary-converter')!;
   clearBtn.addEventListener('click', () => { input.value = ''; output.value = ''; msg.textContent = ''; input.focus(); });
 
   run();
+
+  // Shareable link state (?text=…)
+  import('../../lib/deeplink').then(({ bindParam }) => bindParam(input, 'text'));
 </script>

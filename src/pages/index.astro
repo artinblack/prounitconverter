@@ -33,7 +33,7 @@ const faqs = [
   },
   {
     q: 'What unit categories are supported?',
-    a: 'We support 14 categories: Length, Weight, Temperature, Area, Volume, Speed, Digital Storage, Time, Currency, Angle, Pressure, Energy, Density, and Power — covering the most common conversion needs.',
+    a: 'We support 19 categories: Length, Weight, Temperature, Area, Volume, Speed, Digital Storage, Time, Currency, Angle, Pressure, Energy, Power, Force, Voltage, Cooking, Density, Fuel Economy, and Number Base — covering the most common conversion needs.',
   },
   {
     q: 'How do I convert Celsius to Fahrenheit?',
@@ -45,7 +45,7 @@ const faqs = [
   },
   {
     q: 'What is a unit converter?',
-    a: 'A unit converter is a tool that translates a value expressed in one unit of measurement into its equivalent in a different unit within the same physical quantity. For example, converting 5 kilometers into miles, or 100 grams into ounces. Our online unit converter covers 14 categories — length, weight, temperature, area, volume, speed, digital storage, time, currency, angle, pressure, energy, density, and power — handling the most common everyday and professional conversion needs in a single, free tool.',
+    a: 'A unit converter is a tool that translates a value expressed in one unit of measurement into its equivalent in a different unit within the same physical quantity. For example, converting 5 kilometers into miles, or 100 grams into ounces. Our online unit converter covers 19 categories — length, weight, temperature, area, volume, speed, digital storage, time, currency, angle, pressure, energy, power, force, voltage, cooking, density, fuel economy, and number base — handling the most common everyday and professional conversion needs in a single, free tool.',
   },
   {
     q: 'How can you convert units?',
@@ -57,7 +57,7 @@ const faqs = [
   },
   {
     q: 'What happened to the Google unit converter?',
-    a: "Google's built-in unit converter is still available by searching phrases like \"100 km to miles\" or \"convert kg to lbs\" directly in Google Search — it shows a quick widget at the top of results. However, it is limited to a handful of basic categories and shows no formulas, no conversion history, and no batch mode. Our unit converter is a dedicated tool with 14 categories, formula display, conversion history, keyboard shortcuts, and offline PWA support — a more complete alternative you can bookmark or install on your device.",
+    a: "Google's built-in unit converter is still available by searching phrases like \"100 km to miles\" or \"convert kg to lbs\" directly in Google Search — it shows a quick widget at the top of results. However, it is limited to a handful of basic categories and shows no formulas, no conversion history, and no batch mode. Our unit converter is a dedicated tool with 19 categories, formula display, conversion history, keyboard shortcuts, and offline PWA support — a more complete alternative you can bookmark or install on your device.",
   },
   {
     q: 'How do you convert wavenumbers (cm⁻¹) to joules?',
@@ -74,7 +74,7 @@ const schemas = [
     applicationCategory: 'UtilityApplication',
     operatingSystem: 'Any',
     browserRequirements: 'Requires JavaScript',
-    description: 'Free online unit converter calculator for weight, length, area, time, currency, density, power, pressure, energy, and more. 14 categories, 120+ units, live exchange rates.',
+    description: 'Free online unit converter calculator for weight, length, area, time, currency, density, power, pressure, energy, and more. 19 categories, 120+ units, live exchange rates.',
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     author: { '@type': 'Organization', name: 'Unit Converter' },
   },
@@ -114,7 +114,7 @@ const schemas = [
 ---
 
 <Layout
-  title="Unit Converter — Free Online Unit Converter Calculator | 14 Categories"
+  title="Unit Converter — Free Online Unit Converter Calculator | 19 Categories"
   description="Free online unit converter for weight, length, area, time, currency, density, power & more. Instant results, live exchange rates, formula display. No sign-up, no ads."
   schemas={schemas}
 >
@@ -172,7 +172,7 @@ const schemas = [
       <div class="section-header">
         <h2 class="display-lg">All Unit Converters</h2>
         <p class="body-lg" style="color: var(--color-ink-mute); margin-top: 8px;">
-          18 categories · 120+ units · Live currency rates
+          {categories.length} categories · 120+ units · Live currency rates
         </p>
       </div>
       <div style="margin-top: var(--sp-xxl);">
@@ -204,6 +204,9 @@ const schemas = [
         <a href="/convert/psi-to-kpa" class="unit-link">PSI to kPa</a>
         <a href="/convert/kw-to-hp"  class="unit-link">kW to HP</a>
         <a href="/convert/deg-to-rad" class="unit-link">Degrees to Radians</a>
+      </div>
+      <div style="margin-top: var(--sp-lg);">
+        <a href="/charts" class="unit-link" style="font-weight:500;">📋 Printable conversion charts →</a>
       </div>
     </div>
   </section>
@@ -254,7 +257,7 @@ const schemas = [
       <h2 class="display-lg how-title">How to convert units</h2>
       <div class="how-grid">
         {[
-          { n: '1', title: 'Choose a category', body: 'Select the type of measurement you need — length, weight, temperature, or one of the 9 categories.' },
+          { n: '1', title: 'Choose a category', body: 'Select the type of measurement you need — length, weight, temperature, or one of the 19 categories.' },
           { n: '2', title: 'Enter your value', body: 'Type any number into the input field. Results update instantly as you type — no button to press.' },
           { n: '3', title: 'Pick your units', body: 'Choose the source unit and target unit from the dropdowns. Swap them with the ⇄ button.' },
           { n: '4', title: 'Copy the result', body: 'One-click copy saves the full conversion to your clipboard, ready to paste anywhere.' },
@@ -284,7 +287,7 @@ const schemas = [
             equivalent in another. Whether you're a student checking lab results, a chef adapting a recipe from grams
             to ounces, or an engineer comparing metric and imperial specs, an accurate <strong>online unit
             converter</strong> eliminates guesswork and saves time. Our tool is free, works entirely in your browser,
-            and covers over 120 units across 14 measurement categories — no app download, no account, no ads.
+            and covers over 120 units across 19 measurement categories — no app download, no account, no ads.
           </p>
 
           <h3>One Calculator for Every Measurement Type</h3>

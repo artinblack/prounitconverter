@@ -94,4 +94,7 @@ const tool = toolMap.get('text-case-converter')!;
   });
 
   updateCounts();
+
+  // Shareable link state (?text=…)
+  import('../../lib/deeplink').then(({ bindParam }) => bindParam(input, 'text'));
 </script>

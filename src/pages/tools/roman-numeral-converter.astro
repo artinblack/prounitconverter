@@ -106,4 +106,7 @@ const tool = toolMap.get('roman-numeral-converter')!;
   });
 
   run();
+
+  // Shareable link state (?n=…)
+  import('../../lib/deeplink').then(({ bindParam }) => bindParam(input, 'n'));
 </script>

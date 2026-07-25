@@ -1,0 +1,89 @@
+---
+import Layout from '../../components/Layout.astro';
+import { charts, chartSlug } from '../../lib/charts';
+import { categoryMap } from '../../lib/units';
+
+const siteUrl = 'https://prounitconverter.com';
+const pageUrl = `${siteUrl}/charts`;
+
+// Group charts by category (in the order categories are defined)
+const byCat = new Map<string, Array<{ slug: string; label: string }>>();
+for (const c of charts) {
+  const cat = categoryMap.get(c.category);
+  if (!cat) continue;
+  const from = cat.units.find(u => u.id === c.from);
+  const to = cat.units.find(u => u.id === c.to);
+  if (!from || !to) continue;
+  const arr = byCat.get(cat.name) ?? [];
+  arr.push({ slug: chartSlug(c), label: `${from.name} to ${to.name}` });
+  byCat.set(cat.name, arr);
+}
+const groups = [...byCat.entries()];
+
+const schemas = [
+  {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Charts', item: pageUrl },
+    ],
+  },
+  {
+    '@context': 'https://schema.org', '@type': 'ItemList',
+    name: 'Printable Conversion Charts',
+    itemListElement: charts.map((c, i) => ({ '@type': 'ListItem', position: i + 1, url: `${siteUrl}/charts/${chartSlug(c)}` })),
+  },
+];
+---
+
+<Layout
+  title="Printable Conversion Charts — cm to inches, kg to lbs & More"
+  description="Free printable conversion charts: cm to inches, kg to lbs, Celsius to Fahrenheit, ml to oz and more. Quick-reference tables you can print for the kitchen, workshop, or class."
+  canonical={pageUrl}
+  schemas={schemas}
+  keywords="conversion charts, printable conversion chart, cm to inches chart, kg to lbs chart, celsius to fahrenheit chart, metric conversion chart"
+>
+  <nav aria-label="Breadcrumb" class="breadcrumb-bar">
+    <div class="container">
+      <ol class="breadcrumb-list">
+        <li><a href="/">Home</a></li>
+        <li aria-hidden="true" class="breadcrumb-sep">›</li>
+        <li><span>Charts</span></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section class="charts-hero hero-mesh">
+    <div class="container">
+      <span class="pill-tag pill-tag-soft">Free · Printable · No sign-up</span>
+      <h1 class="display-lg" style="margin-top:var(--sp-md);">Printable Conversion Charts</h1>
+      <p class="body-lg" style="color:var(--color-ink-2);max-width:600px;">
+        Quick-reference tables for the most common conversions — print one for the kitchen,
+        workshop, or classroom, or use the live converter for any value.
+      </p>
+    </div>
+  </section>
+
+  {groups.map(([cat, items]) => (
+    <section class="section-sm">
+      <div class="container">
+        <h2 class="heading-md" style="margin-bottom:var(--sp-lg);">{cat}</h2>
+        <div class="other-cats">
+          {items.map(it => (<a href={`/charts/${it.slug}`} class="other-cat-link">{it.label}</a>))}
+        </div>
+      </div>
+    </section>
+  ))}
+</Layout>
+
+<style>
+  .charts-hero { padding: var(--sp-huge) 0 var(--sp-xxl); }
+  .other-cats { display: flex; flex-wrap: wrap; gap: var(--sp-sm); }
+  .other-cat-link {
+    display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px;
+    border-radius: var(--rounded-pill); font-size: 13px; color: var(--color-ink-2);
+    border: 1px solid var(--color-hairline); text-decoration: none;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .other-cat-link:hover { border-color: var(--color-primary-subtle); color: var(--color-primary); background: var(--color-canvas-soft); text-decoration: none; }
+</style>

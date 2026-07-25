@@ -50,6 +50,16 @@ export default defineConfig({
           return { ...item, priority: 0.7, changefreq: 'monthly', lastmod: LAST_MOD };
         }
 
+        // ── Charts hub  /charts  ─────────────────────────────
+        if (path === '/charts' || path === '/charts/') {
+          return { ...item, priority: 0.8, changefreq: 'weekly', lastmod: LAST_MOD };
+        }
+
+        // ── Printable chart pages  /charts/cm-to-in  ─────────
+        if (/^\/charts\//.test(path)) {
+          return { ...item, priority: 0.7, changefreq: 'monthly', lastmod: LAST_MOD };
+        }
+
         // ── Developer API page ────────────────────────────────
         if (path === '/api') {
           return { ...item, priority: 0.6, changefreq: 'monthly', lastmod: LAST_MOD };

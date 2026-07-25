@@ -113,4 +113,7 @@ const tool = toolMap.get('fraction-to-decimal-converter')!;
   });
 
   run();
+
+  // Shareable link state (?v=…)
+  import('../../lib/deeplink').then(({ bindParam }) => bindParam(input, 'v'));
 </script>

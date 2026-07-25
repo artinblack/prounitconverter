@@ -19,7 +19,7 @@ export interface Tool {
   slug: string;
   name: string;
   icon: string;
-  group: 'Text' | 'Color' | 'Design' | 'Numbers' | 'Time' | 'Developer';
+  group: 'Text' | 'Color' | 'Design' | 'Numbers' | 'Time' | 'Developer' | 'Health';
   /** Short one-liner used on cards and nav. */
   tagline: string;
   /** Page <h1>. */
@@ -694,6 +694,122 @@ export const tools: Tool[] = [
       { q: 'Does it handle accented characters?', a: 'Yes. Accented letters are converted to their closest ASCII equivalents (é → e) so the slug stays URL-safe.' },
     ],
     related: ['morse-code-translator', 'text-case-converter', 'base64-converter'],
+  },
+
+  // ── AGE CALCULATOR ─────────────────────────────────────────
+  {
+    slug: 'age-calculator',
+    name: 'Age Calculator',
+    icon: '🎂',
+    group: 'Time',
+    tagline: 'Calculate exact age in years, months, and days from a birth date.',
+    h1: 'Age Calculator',
+    seoTitle: 'Age Calculator — Calculate Your Exact Age in Years, Months, Days',
+    metaDescription:
+      'Free age calculator. Enter your date of birth to get your exact age in years, months and days, plus total weeks, days, hours, and a countdown to your next birthday.',
+    keywords:
+      'age calculator, calculate age, age from date of birth, how old am i, date of birth calculator, exact age, chronological age calculator',
+    intro:
+      'The Age Calculator works out your exact age from your date of birth — in years, months and days — as of today or any date you choose. It also shows your age in total months, weeks, days and hours, and counts down the days to your next birthday.',
+    body:
+      'Working out an exact age by hand is fiddly because months and years have different lengths and leap years get in the way. This calculator handles all of that: pick your birth date (and optionally an "age at" date), and it computes the precise difference plus a set of fun totals. It is handy for forms, eligibility checks, birthdays, and quick "how old is…" questions.',
+    useCases: [
+      'Find your exact age in years, months and days for a form or application.',
+      'Check age eligibility as of a specific future or past date.',
+      'See how many total days, weeks or hours you have been alive.',
+      'Count down the days until your next birthday.',
+      'Work out someone else\'s age from their date of birth.',
+    ],
+    howToSteps: [
+      { title: 'Enter your birth date', text: 'Pick your date of birth from the date field.' },
+      { title: 'Choose the "as of" date', text: 'Leave it as today, or set a different date to check age at that point.' },
+      { title: 'Read your age', text: 'Your exact age and totals appear instantly, with a birthday countdown.' },
+    ],
+    faqs: [
+      { q: 'How is exact age calculated?', a: 'Age is the difference between two dates in whole years, then the leftover months, then the leftover days — accounting for different month lengths and leap years. This calculator does it precisely.' },
+      { q: 'Does it handle leap years?', a: 'Yes. Leap days (29 February) are counted correctly, so your day and hour totals are accurate.' },
+      { q: 'Can I calculate age at a past or future date?', a: 'Yes. Change the "age at" date to any date and the calculator shows the age as of that day rather than today.' },
+      { q: 'Is my birth date stored anywhere?', a: 'No. The calculation runs entirely in your browser — nothing you enter is uploaded or saved on a server.' },
+    ],
+    related: ['unix-timestamp-converter', 'time-zone-converter', 'bmi-calculator'],
+    relatedConvert: { href: '/convert/time', label: 'Time Converter' },
+  },
+
+  // ── BMI CALCULATOR ─────────────────────────────────────────
+  {
+    slug: 'bmi-calculator',
+    name: 'BMI Calculator',
+    icon: '⚖️',
+    group: 'Health',
+    tagline: 'Calculate your Body Mass Index in metric or imperial units.',
+    h1: 'BMI Calculator',
+    seoTitle: 'BMI Calculator — Body Mass Index (Metric & Imperial)',
+    metaDescription:
+      'Free BMI calculator. Enter your height and weight in metric or imperial units to get your Body Mass Index, your weight category, and your healthy weight range.',
+    keywords:
+      'bmi calculator, body mass index, calculate bmi, bmi metric, bmi imperial, healthy weight range, bmi chart, am i overweight',
+    intro:
+      'The BMI Calculator works out your Body Mass Index from your height and weight, in either metric (kg, cm) or imperial (lb, ft/in) units. It shows your BMI number, the weight category it falls into, and the healthy weight range for your height.',
+    body:
+      'Body Mass Index is a quick screening number that relates weight to height (BMI = kg ÷ m²). It is not a diagnosis and does not distinguish muscle from fat, but it is a widely used first indicator: below 18.5 is underweight, 18.5–24.9 is normal, 25–29.9 is overweight, and 30+ is obese. This calculator also shows the weight range that would put you in the normal band for your height.',
+    useCases: [
+      'Check your BMI and which category it falls into.',
+      'See the healthy weight range for your height.',
+      'Switch between metric and imperial without converting by hand.',
+      'Track progress toward a target weight.',
+      'Get a quick screening figure before a doctor visit.',
+    ],
+    howToSteps: [
+      { title: 'Pick your units', text: 'Choose metric (kg, cm) or imperial (lb, ft/in).' },
+      { title: 'Enter height & weight', text: 'Type your measurements into the fields.' },
+      { title: 'Read your BMI', text: 'Your BMI, category, and healthy weight range appear instantly.' },
+    ],
+    faqs: [
+      { q: 'How is BMI calculated?', a: 'BMI = weight in kilograms ÷ (height in metres)². In imperial units: BMI = 703 × weight(lb) ÷ height(in)². This calculator applies the right formula for the units you pick.' },
+      { q: 'What is a healthy BMI?', a: 'For most adults a BMI of 18.5–24.9 is considered normal. Below 18.5 is underweight, 25–29.9 is overweight, and 30 or above is obese.' },
+      { q: 'Is BMI accurate for everyone?', a: 'BMI is a screening tool, not a diagnosis. It does not distinguish muscle from fat, so very muscular people may read high, and it is interpreted differently for children, athletes, and some ethnic groups. Treat it as a rough guide.' },
+      { q: 'What is my ideal weight?', a: 'This calculator shows the weight range that corresponds to a normal BMI (18.5–24.9) for your height, which is a common way to express a healthy target range.' },
+    ],
+    related: ['age-calculator', 'percentage-calculator', 'fraction-to-decimal-converter'],
+    relatedConvert: { href: '/convert/weight', label: 'Weight Converter' },
+  },
+
+  // ── WORD & CHARACTER COUNTER ───────────────────────────────
+  {
+    slug: 'word-counter',
+    name: 'Word & Character Counter',
+    icon: '📝',
+    group: 'Text',
+    tagline: 'Count words, characters, sentences, and reading time as you type.',
+    h1: 'Word & Character Counter',
+    seoTitle: 'Word Counter — Count Words, Characters & Reading Time',
+    metaDescription:
+      'Free word and character counter. Get live counts of words, characters (with and without spaces), sentences, paragraphs, and estimated reading and speaking time.',
+    keywords:
+      'word counter, character counter, word count, character count, count words online, reading time calculator, letter counter, text counter',
+    intro:
+      'The Word & Character Counter gives you a live count of your text as you type or paste — words, characters (with and without spaces), sentences, and paragraphs — plus estimated reading and speaking time. Everything updates instantly and stays in your browser.',
+    body:
+      'Writers, students, and marketers constantly work to limits: a 160-character meta description, a 280-character post, a 500-word essay, a 1,500-word article. This counter shows all the numbers at once so you can hit any target without guessing, and the reading-time estimate (about 200 words per minute) helps you gauge how long a piece takes to consume.',
+    useCases: [
+      'Hit an exact word count for an essay, article, or assignment.',
+      'Stay within character limits for meta descriptions, tweets, or bios.',
+      'Estimate how long a piece takes to read or speak aloud.',
+      'Check sentence and paragraph counts for readability.',
+      'Count characters with and without spaces for forms and fields.',
+    ],
+    howToSteps: [
+      { title: 'Paste your text', text: 'Type or paste any text into the box.' },
+      { title: 'Watch the counts', text: 'Words, characters, sentences and paragraphs update live.' },
+      { title: 'Check reading time', text: 'Estimated reading and speaking time appear alongside the counts.' },
+    ],
+    faqs: [
+      { q: 'Does the character count include spaces?', a: 'The counter shows both: total characters (including spaces) and characters excluding spaces, so you can match whichever limit you need.' },
+      { q: 'How is reading time estimated?', a: 'Reading time assumes an average adult reading speed of about 200 words per minute; speaking time assumes roughly 130 words per minute. Both are estimates.' },
+      { q: 'Is there a word or character limit?', a: 'No. You can count anything from a single tweet to a full document — it all runs in your browser.' },
+      { q: 'Is my text saved or uploaded?', a: 'No. The counter processes everything locally in your browser; nothing you type is sent anywhere.' },
+    ],
+    related: ['text-case-converter', 'slug-generator', 'base64-converter'],
   },
 ];
 
